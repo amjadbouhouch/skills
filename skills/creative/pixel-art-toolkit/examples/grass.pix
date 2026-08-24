@@ -1,0 +1,29 @@
+name: grass
+size: 16x16
+scale: 10
+
+palette:
+g = #3f9d44
+h = #63c74d
+G = #2f7a37
+d = #8a5a34
+p = #a9713f
+D = #6b422a
+
+pixels:
+g,g,g,g,g,g,g,g,g,g,g,g,g,g,g,g
+g,g,g,g,g,g,g,g,g,g,g,g,h,h,g,g
+g,g,h,h,g,g,g,g,g,G,g,g,g,g,g,g
+g,g,g,g,g,g,g,g,g,g,g,g,g,g,g,g
+g,g,g,g,g,g,g,h,h,g,g,g,g,g,g,g
+g,G,g,g,g,g,g,g,g,g,g,g,g,g,h,h
+g,g,g,g,g,g,g,g,g,g,h,h,g,g,g,g
+g,g,g,g,h,h,g,g,g,g,g,g,g,g,g,g
+g,g,g,g,g,g,G,g,g,g,g,g,g,G,g,g
+d,g,g,g,d,g,g,g,d,g,g,g,d,g,g,g
+g,d,g,g,g,d,g,d,g,g,g,d,g,d,g,g
+d,d,d,g,d,p,p,d,d,g,d,d,d,D,d,g
+d,d,d,D,d,d,d,d,d,d,d,d,d,d,d,d
+d,d,d,d,d,d,d,d,d,d,d,D,d,d,d,d
+d,D,d,d,d,d,d,d,D,d,d,d,d,d,d,d
+d,d,d,d,d,d,d,d,d,d,d,d,p,p,d,d

@@ -1,0 +1,119 @@
+name: btr82
+size: 64x96
+scale: 4
+
+palette:
+o  = #172018
+s  = #344329
+m  = #777b68
+b  = #566b36
+l  = #78904b
+md = #3d433b
+h  = #aab56b
+ro = #111613
+r  = #252b27
+ct = #8a7442
+rl = #414940
+gl = #75a7a5
+g  = #355861
+cd = #2c3b28
+xl = #d75a42
+x  = #9d352c
+
+pixels:
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,o,o,o,o,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,o,o,o,o,o,o,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,s,s,s,m,m,m,s,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,b,l,l,l,m,m,m,b,b,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,s,b,l,o,o,m,m,m,o,o,b,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,s,b,l,l,o,o,md,md,md,o,o,b,b,s,s,o,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,s,h,h,h,h,o,o,h,md,md,o,o,b,b,b,s,s,o,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,s,b,l,l,l,l,o,o,h,md,md,o,o,b,b,b,b,s,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,s,s,l,l,l,l,b,o,o,h,md,md,o,o,b,b,b,b,b,s,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,s,s,l,l,l,l,l,b,o,o,h,md,md,o,o,b,b,b,b,b,b,s,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,o,s,s,l,l,l,l,l,b,b,o,o,h,md,md,o,o,b,b,b,b,b,b,b,s,s,s,o,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,s,s,l,l,l,l,l,l,l,l,o,o,h,md,md,o,o,l,l,l,l,l,l,l,l,s,s,s,s,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,ro,ro,ro,ro,ro,ro,.,.,.,o,o,o,s,s,l,l,l,l,l,l,l,l,o,o,h,md,md,o,o,l,l,l,l,l,l,l,l,b,b,s,s,o,o,.,.,.,ro,ro,ro,ro,ro,ro,.,.,.,.,.,.
+.,.,.,.,.,ro,r,r,r,r,r,r,ro,.,o,o,o,o,s,s,l,l,l,l,ct,ct,ct,ct,o,o,h,md,md,o,o,ct,ct,ct,ct,ct,l,l,l,b,b,s,s,o,o,o,.,ro,r,r,r,r,r,r,ro,.,.,.,.,.
+.,.,.,.,ro,r,r,r,r,r,r,r,r,ro,o,o,o,s,s,l,l,l,l,l,ct,ct,ct,o,o,o,h,md,md,o,o,ct,o,ct,ct,ct,l,l,l,l,b,s,s,o,o,o,ro,r,r,r,r,r,r,r,r,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,r,r,r,ro,o,o,o,s,s,l,o,o,o,o,o,o,o,o,o,o,h,md,md,o,o,ct,o,o,o,o,o,o,o,o,b,s,s,s,o,o,ro,r,r,r,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,r,r,r,o,o,o,o,s,s,l,o,gl,gl,gl,gl,gl,g,o,o,o,h,md,md,o,o,ct,o,g,gl,g,g,g,g,o,b,b,s,s,o,o,o,r,r,r,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,md,md,md,md,r,r,o,o,o,s,s,h,l,o,g,g,g,g,g,g,o,o,o,h,md,md,o,o,ct,o,g,g,g,g,g,g,o,l,b,s,s,o,o,o,r,r,md,md,md,md,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,md,r,r,o,o,o,s,s,h,l,o,g,g,g,g,g,g,o,o,o,h,md,md,o,o,ct,o,g,g,g,g,g,g,o,l,b,s,s,s,o,o,r,r,md,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,md,r,o,o,o,s,s,h,l,l,o,o,o,o,o,o,o,o,o,o,h,md,md,o,o,ct,o,o,o,o,o,o,o,o,l,l,b,s,s,o,o,o,r,md,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,md,r,o,o,o,s,s,h,l,l,o,o,o,o,o,o,o,o,o,o,h,md,md,o,o,ct,o,o,o,o,o,o,o,o,l,l,b,s,s,o,o,o,r,md,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,md,md,md,md,r,o,o,o,s,s,h,l,l,ct,ct,ct,ct,ct,ct,ct,ct,o,o,h,md,md,o,o,o,ct,ct,ct,ct,ct,ct,ct,l,l,l,b,s,s,s,o,o,r,md,md,md,md,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,r,o,o,o,s,s,l,h,l,l,l,l,l,l,l,l,o,o,o,o,h,md,md,o,o,o,o,o,l,l,l,l,l,l,l,l,l,b,s,s,o,o,o,r,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,r,o,o,o,s,s,h,l,l,l,l,l,l,l,o,o,o,o,o,o,h,md,md,o,o,s,o,o,o,o,l,l,l,l,l,l,l,b,s,s,o,o,o,r,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,r,r,r,r,r,o,o,o,s,s,l,h,l,l,l,b,b,b,o,o,o,b,b,o,o,h,md,md,o,o,b,s,s,o,o,o,b,b,b,b,b,b,b,s,s,s,o,o,o,r,r,r,r,r,ro,.,.,.,.
+.,.,.,.,.,ro,r,r,r,r,o,o,o,s,s,l,h,l,l,l,b,b,o,o,o,b,b,l,o,o,h,md,md,o,o,l,l,l,s,o,o,o,b,b,b,cd,cd,cd,cd,s,s,o,o,o,r,r,r,r,ro,.,.,.,.,.
+.,.,.,.,.,.,ro,ro,ro,ro,o,o,o,s,s,l,h,l,l,l,b,o,o,o,b,b,l,l,o,o,md,md,md,o,o,l,l,l,s,s,o,o,o,b,cd,cd,h,cd,cd,s,s,o,o,o,ro,ro,ro,ro,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,o,o,o,s,s,h,l,h,l,b,b,o,o,b,l,l,l,l,o,o,md,md,md,o,o,l,l,l,l,s,s,o,o,cd,cd,cd,cd,cd,cd,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,o,o,o,s,s,h,l,l,l,b,o,o,b,b,l,l,gl,g,g,o,o,o,o,o,o,cd,cd,l,l,l,s,s,o,o,cd,cd,cd,cd,cd,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,ro,ro,ro,ro,o,o,o,s,s,h,cd,cd,cd,cd,o,o,b,l,l,l,g,g,g,o,b,b,b,o,o,cd,cd,cd,l,l,s,s,o,o,cd,cd,cd,cd,cd,s,s,o,o,o,ro,ro,ro,ro,.,.,.,.,.,.
+.,.,.,.,.,ro,r,r,r,r,o,o,o,s,s,cd,cd,cd,cd,o,o,b,b,l,l,l,g,g,g,b,b,b,b,b,o,o,cd,cd,cd,cd,s,s,s,o,o,cd,cd,cd,cd,s,s,o,o,o,r,r,r,r,ro,.,.,.,.,.
+.,.,.,.,ro,r,r,r,r,r,o,o,o,s,s,cd,cd,cd,cd,o,o,b,l,l,l,l,g,g,g,b,b,b,b,b,b,o,cd,md,md,md,s,s,s,o,o,cd,cd,cd,cd,s,s,o,o,o,r,r,r,r,r,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,s,cd,cd,cd,cd,o,o,l,l,l,l,l,g,g,g,b,b,b,b,b,b,o,cd,md,md,md,l,s,s,o,o,cd,cd,cd,cd,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,s,cd,cd,cd,cd,o,o,b,l,l,l,l,l,o,b,b,b,b,b,b,b,o,cd,md,md,md,s,s,s,o,o,cd,cd,cd,cd,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,md,md,md,o,o,o,s,s,cd,cd,h,cd,o,o,b,l,l,l,l,l,o,o,b,b,b,b,b,o,o,cd,cd,cd,cd,s,s,s,o,o,cd,cd,cd,cd,s,s,o,o,o,md,md,md,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,o,o,o,s,s,cd,cd,cd,cd,o,o,b,l,l,l,l,l,l,o,o,b,b,b,o,o,cd,cd,cd,cd,cd,s,s,s,o,o,cd,cd,cd,cd,s,s,o,o,o,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,o,o,o,s,s,cd,cd,cd,cd,o,o,s,b,l,l,l,l,l,l,o,o,o,o,o,cd,cd,cd,cd,cd,cd,s,s,s,o,o,b,b,b,b,s,s,o,o,o,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,o,o,o,s,s,cd,cd,cd,cd,o,o,s,b,l,l,l,l,l,l,l,l,l,l,cd,cd,cd,cd,cd,cd,s,s,s,s,o,o,b,b,b,b,s,s,o,o,o,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,md,md,md,o,o,o,s,s,cd,cd,cd,cd,cd,o,o,s,l,l,l,l,l,l,l,l,l,l,cd,cd,cd,cd,cd,s,s,s,s,o,o,b,b,h,b,b,s,s,o,o,o,md,md,md,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,s,cd,cd,cd,cd,cd,o,o,s,s,b,l,l,l,l,l,l,l,l,cd,cd,cd,cd,l,s,s,s,s,o,o,b,b,b,b,b,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,s,cd,cd,cd,cd,cd,cd,o,o,s,s,b,b,l,l,l,l,l,l,cd,cd,l,s,s,s,s,s,o,o,b,b,b,b,b,b,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,r,r,r,r,r,o,o,o,s,s,cd,cd,cd,cd,cd,cd,o,o,o,s,s,s,b,l,l,l,l,l,l,l,s,s,s,s,s,o,o,o,b,b,b,b,b,b,s,s,o,o,o,r,r,r,r,r,ro,.,.,.,.
+.,.,.,.,.,ro,r,r,r,r,o,o,o,s,xl,xl,x,x,cd,cd,cd,cd,o,o,o,s,s,s,s,s,s,s,s,s,s,s,s,s,s,o,o,o,b,b,b,b,xl,xl,x,s,s,o,o,o,r,r,r,r,ro,.,.,.,.,.
+.,.,.,.,.,.,ro,ro,ro,ro,o,o,o,s,x,x,x,x,cd,cd,cd,cd,cd,o,o,o,s,s,s,s,s,s,s,s,s,s,s,s,o,o,o,b,b,b,b,b,x,x,x,s,s,o,o,o,ro,ro,ro,ro,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,o,o,o,s,s,cd,cd,cd,cd,cd,cd,cd,cd,cd,o,o,o,o,s,s,s,s,s,s,s,s,o,o,o,o,b,b,b,b,b,b,b,b,b,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,o,o,o,s,s,b,cd,cd,cd,cd,cd,cd,cd,cd,cd,cd,o,o,o,o,o,o,o,o,o,o,o,o,b,b,b,b,b,ct,ct,ct,ct,ct,b,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,ro,ro,ro,ro,o,o,o,s,s,b,b,cd,s,s,s,s,s,s,s,s,s,s,s,s,s,o,o,s,s,s,s,s,s,s,s,s,s,s,s,s,ct,ct,ct,s,s,o,o,o,ro,ro,ro,ro,.,.,.,.,.,.
+.,.,.,.,.,ro,r,r,r,r,o,o,o,s,s,b,b,b,s,h,cd,cd,cd,cd,cd,cd,cd,b,b,h,s,b,b,s,h,b,b,b,b,cd,ct,ct,ct,ct,h,s,ct,ct,ct,s,s,o,o,o,r,r,r,r,ro,.,.,.,.,.
+.,.,.,.,ro,r,r,r,r,r,o,o,o,s,s,b,b,b,s,b,cd,cd,cd,cd,cd,l,l,l,l,b,s,b,b,s,b,l,l,l,l,cd,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,r,r,r,r,r,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,s,b,b,b,s,b,b,b,b,b,cd,b,b,b,b,b,s,b,b,s,b,b,b,b,b,cd,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,s,b,b,b,s,b,b,b,b,b,cd,b,b,b,b,b,s,b,b,s,b,b,b,b,ct,cd,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,md,md,md,o,o,o,s,s,b,b,h,s,b,m,m,m,m,m,b,b,b,b,b,s,b,b,s,b,m,m,m,m,m,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,md,md,md,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,o,o,o,s,s,b,b,b,s,b,m,m,m,m,m,b,b,b,b,b,s,b,b,s,b,m,m,m,m,m,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,o,o,o,s,s,b,b,b,s,b,b,b,b,b,cd,b,b,b,b,b,s,b,b,s,b,b,b,ct,ct,cd,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,o,o,o,s,s,b,b,b,s,b,b,b,b,b,cd,b,b,b,b,b,s,b,b,s,b,b,ct,ct,ct,cd,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,md,md,md,o,o,o,s,s,b,b,b,s,b,b,b,b,b,cd,b,b,b,b,b,s,b,b,s,b,ct,ct,ct,ct,cd,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,md,md,md,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,s,b,b,b,s,b,b,b,b,b,cd,b,b,b,b,b,s,b,b,s,b,ct,ct,ct,ct,cd,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,s,b,b,b,s,b,b,b,b,b,cd,b,b,b,b,b,s,b,b,s,b,ct,ct,ct,ct,cd,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,r,r,r,r,r,o,o,o,s,s,b,b,b,s,b,b,b,b,b,cd,b,b,b,b,b,s,b,b,s,b,ct,ct,ct,ct,cd,ct,ct,ct,ct,ct,s,ct,ct,ct,s,s,o,o,o,r,r,r,r,r,ro,.,.,.,.
+.,.,.,.,.,ro,r,r,r,r,o,o,o,s,s,b,b,h,s,b,b,b,b,b,cd,b,b,b,b,b,s,b,b,s,b,ct,ct,ct,ct,cd,ct,ct,ct,ct,ct,s,ct,ct,b,s,s,o,o,o,r,r,r,r,ro,.,.,.,.,.
+.,.,.,.,.,.,ro,ro,ro,ro,o,o,o,s,s,b,b,b,s,s,s,s,s,s,s,s,s,s,s,s,s,b,b,s,s,s,s,s,s,s,s,s,s,s,s,s,b,b,b,s,s,o,o,o,ro,ro,ro,ro,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,o,o,o,s,o,o,o,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,ct,ct,ct,ct,ct,ct,ct,b,b,h,b,b,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,o,o,o,s,o,m,m,b,ct,ct,o,ct,ct,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,ct,ct,ct,ct,ct,o,b,b,b,b,b,s,s,o,o,o,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,ro,ro,ro,ro,o,o,o,s,o,m,m,ct,ct,ct,ct,ct,ct,ct,ct,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,s,s,o,o,o,ro,ro,ro,ro,.,.,.,.,.,.
+.,.,.,.,.,ro,r,r,r,r,o,o,o,s,o,m,m,ct,s,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,s,cd,cd,cd,s,s,o,o,o,r,r,r,r,ro,.,.,.,.,.
+.,.,.,.,ro,r,r,r,r,r,o,o,o,s,o,m,m,ct,s,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,l,s,cd,cd,cd,s,s,o,o,o,r,r,r,r,r,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,o,m,m,ct,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,cd,cd,cd,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,o,o,o,s,o,m,m,ct,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,cd,cd,cd,s,s,o,o,o,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,md,md,md,o,o,o,s,o,m,m,ct,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,cd,cd,cd,s,s,o,o,o,md,md,md,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,o,o,o,s,o,m,m,ct,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,cd,cd,cd,s,s,o,o,o,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,o,o,o,o,o,m,m,ct,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,cd,cd,cd,s,o,o,o,o,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,r,r,md,m,m,md,o,o,o,o,m,m,ct,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,s,s,md,o,cd,cd,cd,o,o,o,o,md,m,m,md,r,r,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,md,md,md,md,r,o,o,o,m,m,ct,s,s,o,o,s,s,o,o,s,s,o,o,s,s,o,o,s,s,o,o,s,s,o,o,s,s,o,o,s,s,s,o,o,o,r,md,md,md,md,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,r,r,o,o,o,o,o,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,o,o,o,o,r,r,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,rl,rl,r,r,r,r,r,r,o,o,o,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,o,o,o,r,r,r,r,r,r,rl,rl,ro,.,.,.,.
+.,.,.,.,ro,r,r,r,r,r,r,r,r,o,o,o,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,o,o,o,o,r,r,r,r,r,r,r,r,ro,.,.,.,.
+.,.,.,.,.,ro,r,r,r,r,r,r,ro,.,o,o,o,x,xl,x,x,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,x,xl,x,x,s,o,o,o,.,ro,r,r,r,r,r,r,ro,.,.,.,.,.
+.,.,.,.,.,.,ro,ro,ro,ro,ro,ro,.,.,o,o,o,x,x,x,h,s,s,s,s,s,s,s,s,s,s,h,s,s,s,s,s,s,s,s,s,s,x,x,x,x,o,o,o,o,.,.,ro,ro,ro,ro,ro,ro,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.

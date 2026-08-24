@@ -1,0 +1,24 @@
+# sparkle - hand-authored example of mirror: xy with a SHARED center line.
+# size is 15x15 and the grid below is 8x8, so 8*2-1 = 15: the last column and
+# last row of the quadrant sit exactly on the axes and are not duplicated.
+# Four-fold symmetry suits emissive shapes; light needs no direction here,
+# the ramp just radiates: w core -> y -> a tips.
+name: sparkle
+size: 15x15
+scale: 10
+mirror: xy
+
+palette:
+w = #fffef0        # hot core
+y = #ffd23f        # glow
+a = #f4801f        # arm tips / satellites
+
+pixels:
+.,.,.,.,.,.,.,a
+.,.,.,.,.,.,.,a
+.,.,.,.,.,.,.,y
+.,.,.,.,.,.,.,y
+.,.,.,.,a,.,y,y
+.,.,.,.,.,y,y,w
+.,.,.,.,y,y,w,w
+a,a,y,y,y,w,w,w

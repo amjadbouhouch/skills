@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pixel Art Toolkit"
+  short_description: "Create pixel art with a zero-dependency toolkit"
+  default_prompt: "Use $pixel-art-toolkit to create a crisp game-ready pixel-art asset."
