@@ -132,6 +132,41 @@ python3 pixelart.py png2pix logo.png --size 32   # downsample while tracing
 python3 pixelart.py check logo.pix               # count the damage
 ```
 
+### Strip an opaque background before tracing
+
+A subject on a studio backdrop (AI renders, product shots) must lose the
+backdrop **before** `png2pix` — traced in, the backdrop becomes palette codes
+that `reduce` merges with the subject's own grays, and no later cleanup
+separates them.
+
+Flood fill from the border pixels, but with an **absolute background model,
+never neighbor-relative tolerance**. A fill that accepts any neighbor within
+Δ of the pixel it grew from drifts without bound through anti-aliased edges —
+on a 1122×1402 test it consumed 99.6% of the image, subject included. Small
+steps, unlimited cumulative drift.
+
+Build the model by measurement, not guessing:
+
+1. Sample the border pixels: chroma (`max(r,g,b) − min(r,g,b)`) range and
+   channel ordering.
+2. Probe a few subject pixels for a separating feature. Grays split by
+   *temperature*: a cool backdrop has `b ≥ r`, warm subject grays (gun metal,
+   leather shadow) have `b < r` — that ordering saves subject pixels chroma
+   alone cannot.
+3. Set the chroma cutoff with slack for the gradient's center, which is
+   usually farther from the border samples than the border's own spread
+   (measured 18 at the border, 23 mid-frame; 32 worked).
+4. BFS from the border, admitting only pixels the model accepts. Subject
+   pixels that match the model but sit *inside* the silhouette are safe — the
+   fill cannot reach them.
+
+Removed-area percentage is the sanity check: subject-sized (30–70%) is
+plausible, ~100% means the model or the fill leaked.
+
+After trace + `reduce`, despeckle: edge anti-aliasing leaves a few isolated
+cells, and `reduce` deliberately never edits artwork. Deleting filled cells
+with zero orthogonal filled neighbors is safe and enough.
+
 ### Size the trace from the smallest detail, not the subject
 
 The canvas table above is for *authoring*. Tracing inverts the logic: `--size`

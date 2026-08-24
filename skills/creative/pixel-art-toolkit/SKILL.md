@@ -82,6 +82,8 @@ python3 "$PIXELART_TOOL" reduce "$TARGET_ASSETS/source.pix" --colors 16 \
   -o "$TARGET_ASSETS/source-clean.pix"
 ```
 
+Strip any opaque backdrop before tracing — flood fill from the border using an absolute background model (chroma bound + channel ordering measured from the image), never neighbor-relative tolerance, which drifts through anti-aliased edges and eats the subject. Details in [references/workflow.md](references/workflow.md).
+
 Pick `--size` from the smallest detail that must survive, not from the canvas table: a feature needs 3–4 cells to read, so `target size ≥ source size × 3 / detail's pixel span in the source`. When a small feature (chain, pendant, eye) is missing after `reduce`, render the traced `.pix` first — if the feature is already gone there, the trace resolution is the culprit; retrace larger instead of adjusting `reduce`.
 
 After conversion, run `check`, inspect palette for single-use colors, repair silhouette, and reshade deliberately. Do not present raw tracing as finished pixel art.
