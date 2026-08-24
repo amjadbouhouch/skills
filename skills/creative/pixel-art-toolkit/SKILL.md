@@ -82,6 +82,8 @@ python3 "$PIXELART_TOOL" reduce "$TARGET_ASSETS/source.pix" --colors 16 \
   -o "$TARGET_ASSETS/source-clean.pix"
 ```
 
+Pick `--size` from the smallest detail that must survive, not from the canvas table: a feature needs 3–4 cells to read, so `target size ≥ source size × 3 / detail's pixel span in the source`. When a small feature (chain, pendant, eye) is missing after `reduce`, render the traced `.pix` first — if the feature is already gone there, the trace resolution is the culprit; retrace larger instead of adjusting `reduce`.
+
 After conversion, run `check`, inspect palette for single-use colors, repair silhouette, and reshade deliberately. Do not present raw tracing as finished pixel art.
 
 ## Finish

@@ -132,9 +132,37 @@ python3 pixelart.py png2pix logo.png --size 32   # downsample while tracing
 python3 pixelart.py check logo.pix               # count the damage
 ```
 
+### Size the trace from the smallest detail, not the subject
+
+The canvas table above is for *authoring*. Tracing inverts the logic: `--size`
+is bounded from below by the smallest feature that must survive, because
+nearest-neighbor downsampling averages a feature away long before `reduce`
+ever sees it. A feature needs **3–4 cells** to read; from the source
+measurements:
+
+```
+target size ≥ source size × 3 / detail's pixel span in the source
+```
+
+Case that taught this: a 1254×1254 wraith with a ~40px chain. Traced at 64,
+the chain landed at ~2px and vanished; the reduced sprite looked like `reduce`
+had eaten it. It hadn't — rendering the *traced* `.pix` showed the chain was
+already gone before quantization. Retraced at 128 (links ≈4px), the same
+`reduce --colors 24` kept a full gold/bone ramp for it, because the
+material-family segmentation protects small distinctive materials once their
+pixels exist.
+
+So when a detail is missing after conversion, establish blame in this order:
+
+1. Render the **traced** file. Detail absent → trace resolution; retrace
+   larger. Do not fight `reduce` for pixels that were never there.
+2. Detail present in the trace but merged after `reduce` → quantization;
+   see [quantization.md](quantization.md) for hand-tuned families or `remap`.
+
 Cleanup sequence that works:
 
-1. `--size` small enough that each intended pixel is one cell.
+1. `--size` small enough that each intended pixel is one cell — but no
+   smaller than the detail bound above.
 2. In Python: `doc = load_pix("logo.pix")`, then merge stray codes into their
    nearest real color with `sprite.replace("q", "b")` (or `remap` with a
    dict), and delete the dead palette lines (`check` lists them as unused).
