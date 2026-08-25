@@ -7,11 +7,11 @@ scale: 10
 mirror: x
 
 palette:
-o = #2a1e4f        # outline: darkest body hue, not black
+o = #1e244f        # outline: coldest end of the body ramp, not black
 b = #a78bfa        # body
-d = #7c5ce0        # body shadow (same hue, darker + a touch bluer)
+d = #655ce0        # body shadow (hue rotated 11 deg toward blue)
 w = #ffffff        # eye white
-k = #231a44        # pupil
+k = #1a2345        # pupil
 p = #f0a5d8        # cheek blush
 
 pixels:

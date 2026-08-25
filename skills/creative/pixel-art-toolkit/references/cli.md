@@ -76,10 +76,17 @@ python3 pixelart.py render examples/potion.pix --bg "#1b1b22" # flatten alpha
 
 ```bash
 python3 pixelart.py gif examples/coin.pix --fps 12            # coin.gif
-python3 pixelart.py gif examples/ghost.pix --fps 4
+python3 pixelart.py gif examples/ghost.pix --fps 4            # ghost.gif
+python3 pixelart.py gif examples/slime.pix --fps 4            # slime.gif
+python3 pixelart.py gif examples/shinobi.pix --fps 4          # shinobi.gif
 python3 pixelart.py gif walk1.pix walk2.pix walk3.pix -o walk.gif
 python3 pixelart.py gif examples/potion.pix --bg "#1b1b22"    # see alpha note
 ```
+
+`--fps` defaults to **8**, and a `.pix` file carries no rate of its own — the
+rate lives in the command, not the sprite. Two-frame idle loops (`ghost`,
+`slime`) want 4; spin cycles (`coin`) want 12. Re-render a committed GIF
+without repeating its flag and you silently change its speed.
 
 - One file: its frames become the animation. Several files: all frames of all
   files, in order, palettes merged (codes renamed on conflict — see

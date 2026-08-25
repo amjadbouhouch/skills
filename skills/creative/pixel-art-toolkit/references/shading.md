@@ -42,7 +42,10 @@ Two rules make a ramp feel professional rather than airbrushed:
   lights drift toward the light's color (warm sun → yellowish, magic glow →
   whatever the glow is). In the orb: `#2b2a66` (shadow) is distinctly more
   violet than `#3f6fd1` (base), and `#93dcf5` leans cyan. A straight
-  value-only ramp is the #1 "programmer art" tell.
+  value-only ramp is the #1 "programmer art" tell. **Rotate 10–25° minimum** —
+  a 1–2° nudge is a value ramp wearing a hat, and looks like one.
+  Emitters and metals invert the direction (see the warm-shadow exception in
+  [palettes.md](palettes.md)).
 - **Space values unevenly.** Bigger jumps near the shadow end, smaller near
   the light. 3–4 steps is plenty for 16px sprites; 5–6 for 32px hero pieces.
   More steps than that and you're painting, not pixeling.

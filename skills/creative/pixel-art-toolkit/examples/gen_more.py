@@ -131,11 +131,11 @@ POTION = Palette.of({
     "G": "#bfe6ff55",          # glass (33% alpha)
     "e": "#e8f7ff99",          # glass edge highlight (60% alpha)
     "p": "#c2317e",            # potion body
-    "P": "#8f1f5c",            # potion shadow
-    "m": "#f26fae",            # potion surface
+    "P": "#8f1f77",            # potion shadow
+    "m": "#f26f9f",            # potion surface
     "w": "#ffe3f2",            # bubbles / sparkle
     "k": "#8b5a2b",            # cork
-    "K": "#5e3a18",            # cork shadow
+    "K": "#5e2d17",            # cork shadow
 })
 
 pot = Sprite(32, 32, name="potion")

@@ -12,6 +12,7 @@ python3 examples/gen_examples.py   # heart, slime, coin, mushroom
 python3 examples/gen_more.py       # orb (+ stages), bounce, potion, grass, tree
 python3 examples/gen_btr82.py      # top-down arcade BTR-82
 python3 examples/gen_explosion.py  # animated arcade explosion + sprite sheet
+python3 examples/gen_shinobi.py    # 4-frame idle character, hue-harmony study
 ```
 
 `ghost.pix` and `sparkle.pix` are hand-authored — edit the files directly.
@@ -32,6 +33,7 @@ python3 examples/gen_explosion.py  # animated arcade explosion + sprite sheet
 | `explosion.pix` | 32×32, 10 fr | anticipation, expanding fireball, shock ring, smoke breakup | [animation](../docs/animation.md) |
 | `btr82.pix` | 64×96 | layered vehicle construction, angular armor, top-down lighting | [palettes](../docs/palettes.md) |
 | `soldier.pix` | 64×67 | detailed figure on 24 per-material ramps, requantized from a trace | [quantization](../docs/quantization.md) |
+| `shinobi.pix` | 32×32, 4 fr | dominant / analogous / accent hue split; value-separated limbs | [palettes](../docs/palettes.md) |
 
 > **`soldier.pix` started as a 1634-entry trace** — roughly one palette color
 > per pixel, which cannot animate (GIF caps at 255 colors), cannot be recolored,
@@ -47,7 +49,7 @@ working as documented, not a bug):
 ```bash
 for f in examples/*.pix; do python3 pixelart.py check "$f"; done
 python3 pixelart.py sheet \
-  examples/{heart,mushroom,ghost,sparkle,orb,potion,grass,tree,slime,coin,bounce,explosion,btr82,soldier}.pix \
+  examples/{heart,mushroom,ghost,sparkle,orb,potion,grass,tree,slime,shinobi,coin,bounce,explosion,btr82,soldier}.pix \
   -o examples/sheet.png --cols 5 --pad 1 -s 6
 ```
 

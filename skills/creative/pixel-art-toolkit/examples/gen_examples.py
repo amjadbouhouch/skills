@@ -33,7 +33,7 @@ h.outline("o")
 write("heart.pix", h.to_pix(pal, scale=10))
 
 # --------------------------------------------------------------------- slime (anim)
-pal = Palette.of({"o": "#123018", "g": "#4fbb62", "l": "#8ff09a", "d": "#276b34",
+pal = Palette.of({"o": "#123025", "g": "#4fbb62", "l": "#9df090", "d": "#276b44",
                   "w": "#ffffff", "k": "#111111"})
 
 

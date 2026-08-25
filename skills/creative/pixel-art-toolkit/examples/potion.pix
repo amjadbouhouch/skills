@@ -5,12 +5,12 @@ scale: 10
 palette:
 o = #1d1030
 k = #8b5a2b
-K = #5e3a18
+K = #5e2d17
 G = #bfe6ff55
 e = #e8f7ff99
-m = #f26fae
+m = #f26f9f
 p = #c2317e
-P = #8f1f5c
+P = #8f1f77
 w = #ffe3f2
 
 pixels:
