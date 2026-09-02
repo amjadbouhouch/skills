@@ -1,0 +1,4 @@
+interface:
+  display_name: "AgentBoard"
+  short_description: "Build persistent SQLite-backed data apps with migrations and a declarative spec"
+  default_prompt: "Use $agent-board to build a dashboard over this data."

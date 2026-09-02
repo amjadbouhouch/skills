@@ -1,0 +1,26 @@
+{
+  "skill_name": "agent-board",
+  "evals": [
+    {
+      "id": 0,
+      "name": "build-from-scratch",
+      "prompt": "I run a small SaaS and I want a dashboard I can actually open in a browser showing total revenue, revenue per customer, and a table of recent subscriptions I can filter by plan. There's no database yet, start from nothing. Put it in ~/dev/saas-metrics.",
+      "expected_output": "A working AgentBoard project: agent-board.json, a workspace, numbered migrations containing both DDL and seed rows, a specification that passes validate, a successful publish, and a verification query. Should not hand-write a server or a frontend.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "extend-existing",
+      "prompt": "here's my agent-board project (workspace is called analytics, already published at v1). can you add a line chart of orders over time to the overview page, plus a date range filter? don't break what's there",
+      "expected_output": "Reads current state with inspect first, adds a saved query aggregating by date, adds line_chart with a valid mapping and a filter with control daterange, publishes with --expect-version matching the observed version, verifies with query --saved.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "silent-skipped-migration",
+      "prompt": "something weird — i added workspaces/analytics/migrations/0002_add_notes.sql and ran migrate but it just says 'up to date (database v3)' and the notes table doesn't exist. the sql is definitely valid, i ran it by hand in sqlite3 and it worked fine",
+      "expected_output": "Diagnoses that migrate only applies versions above the highest already applied, so a gap-filling file is skipped silently. Fix is to renumber above the current max (0004_). Should not suggest editing the ledger or re-running with a flag.",
+      "files": []
+    }
+  ]
+}

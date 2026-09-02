@@ -1,0 +1,35 @@
+{
+  "dslVersion": "1.0",
+  "id": "analytics",
+  "title": "Orders Analytics",
+  "navigation": [{ "label": "Overview", "page": "overview" }],
+  "savedQueries": [
+    { "name": "revenue_total",
+      "sql": "SELECT SUM(amount) AS revenue FROM orders WHERE status = 'fulfilled'" },
+    { "name": "revenue_by_user",
+      "sql": "SELECT u.name AS user_name, SUM(o.amount) AS revenue FROM orders o JOIN users u ON u.id = o.user_id WHERE o.status = 'fulfilled' GROUP BY u.name ORDER BY revenue DESC" },
+    { "name": "orders_by_plan",
+      "sql": "SELECT o.id, u.name AS user_name, o.status, o.amount FROM orders o JOIN users u ON u.id = o.user_id WHERE u.plan = :plan ORDER BY o.placed_at DESC",
+      "parameters": [{ "name": "plan", "type": "string" }] },
+    { "name": "plans", "sql": "SELECT DISTINCT plan FROM users ORDER BY plan" }
+  ],
+  "pages": [
+    {
+      "id": "overview",
+      "type": "dashboard",
+      "title": "Overview",
+      "components": [
+        { "id": "plan-filter", "type": "filter", "field": "plan", "control": "select",
+          "label": "Plan", "optionsQuery": "plans" },
+        { "id": "revenue", "type": "metric_card", "title": "Fulfilled revenue",
+          "source": { "type": "saved_query", "query": "revenue_total" }, "value": "revenue" },
+        { "id": "revenue-chart", "type": "bar_chart", "title": "Revenue by user",
+          "source": { "type": "saved_query", "query": "revenue_by_user" },
+          "mapping": { "x": "user_name", "y": "revenue" } },
+        { "id": "orders-table", "type": "data_table", "title": "Orders",
+          "source": { "type": "saved_query", "query": "orders_by_plan", "parameters": { "plan": "pro" } },
+          "columns": ["id", "user_name", "status", "amount"] }
+      ]
+    }
+  ]
+}

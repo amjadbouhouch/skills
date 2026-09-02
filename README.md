@@ -16,6 +16,16 @@ npx skills add amjadbouhouch/skills --skill pixel-art-toolkit
 
 Skill source: [`skills/creative/pixel-art-toolkit`](skills/creative/pixel-art-toolkit)
 
+### agent-board
+
+Build a persistent SQLite-backed data application — dashboard, metrics view, internal tool — by writing SQL migrations and a declarative JSON specification instead of application code.
+
+```bash
+npx skills add amjadbouhouch/skills --skill agent-board
+```
+
+Skill source: [`skills/data/agent-board`](skills/data/agent-board) · Runtime: [agent-board](https://github.com/amjadbouhouch/agent-board)
+
 ## Example
 
 | Detailed sprite | Explosion animation |
