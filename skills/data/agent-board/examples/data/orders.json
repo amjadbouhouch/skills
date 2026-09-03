@@ -1,0 +1,6 @@
+[
+  { "id": 1, "user_id": 1, "status": "fulfilled", "amount": 4200, "placed_at": "2026-02-10" },
+  { "id": 2, "user_id": 1, "status": "pending",   "amount": 1500, "placed_at": "2026-02-12" },
+  { "id": 3, "user_id": 2, "status": "fulfilled", "amount": 900,  "placed_at": "2026-02-14" },
+  { "id": 4, "user_id": 3, "status": "fulfilled", "amount": 7300, "placed_at": "2026-02-15" }
+]

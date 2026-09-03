@@ -50,6 +50,48 @@ Four digits, an underscore, a name, `.sql`. For example `0003_add_orders_index.s
 Not an error to recover from — the workspace was already rolled back to its pre-migrate
 state. The error printed after it is the real cause.
 
+## Writing rows
+
+**`An unbounded update would rewrite "items". Narrow it with --where <column><op><value>.`**
+
+`update` and `delete` refuse without a filter. If you genuinely mean every row, say so
+explicitly — `--where id!=@null` matches all of them, and the receipt and row cap still
+apply.
+
+**`The rows matching this update changed since the preview (receipt X, now Y).`**
+
+Something wrote to the table between your preview and your apply, or you changed the
+`--set` values. The receipt covers both. Re-run the preview and apply the new receipt.
+
+**`This delete affects 1200 rows, beyond the 1000 row cap.`**
+
+Narrow the filter, or pass `--force` if that really is the intent.
+
+**`"--apply" does not apply to \`rows insert\`.`**
+
+Inserts write directly, so there is nothing to confirm. A flag that does not belong to
+the subcommand is refused rather than ignored, because ignoring it would confirm a
+belief about what the command did.
+
+**`Row 3: "price" is INTEGER but received "1,200", which is not a number.`**
+
+SQLite would store that as text and every later `SUM()` over the column would be wrong.
+Strip separators and units in the script that produces the JSON.
+
+**`Insert failed: UNIQUE constraint failed: items.id`**
+
+The row already exists. There is no upsert yet — filter for it and `rows update`, or
+delete first.
+
+**`Insert failed: NOT NULL constraint failed: items.name`**
+
+The column has no default and no value was supplied.
+
+**A generated id you cannot find**
+
+`rows insert` reports only a count unless you pass `--returning`. With a random UUID
+default there is nothing to query back by afterwards, so ask for it at insert time.
+
 ## Publishing
 
 **`Refusing to publish: expected application version 0 but the workspace is at 1.`**

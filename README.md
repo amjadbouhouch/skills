@@ -18,7 +18,7 @@ Skill source: [`skills/creative/pixel-art-toolkit`](skills/creative/pixel-art-to
 
 ### agent-board
 
-Build a persistent SQLite-backed data application — dashboard, metrics view, internal tool — by writing SQL migrations and a declarative JSON specification instead of application code.
+Build a persistent SQLite-backed data application — dashboard, metrics view, internal tool — with SQL migrations for schema, a declarative JSON specification for the UI, and preview-before-write commands for the data.
 
 ```bash
 npx skills add amjadbouhouch/skills --skill agent-board
