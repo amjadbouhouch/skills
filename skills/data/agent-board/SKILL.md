@@ -64,7 +64,7 @@ agent-board inspect <name>                         # confirm tables and row coun
 agent-board validate app.json                      # cheap, no workspace needed
 agent-board publish <name> app.json --reason "…"   # runs the gates
 agent-board query <name> --saved <query>           # verify what users will see
-agent-board start --port 4000                      # serve it
+agent-board start --port 4000                      # serve it (add --static <dir> for a UI)
 ```
 
 Run `inspect` after migrating and `query --saved` after publishing. Both are fast, and
@@ -95,6 +95,7 @@ plain substring scan, so *a comment mentioning `_audit_` fails the migration*. S
 
 ```sh
 agent-board rows insert <ws> <table> --data-file rows.json [--returning]
+agent-board rows upsert <ws> <table> --data-file rows.json --on-conflict <col>[,<col>]
 agent-board rows update <ws> <table> --set <col>=<value> --where <col><op><value>
 agent-board rows delete <ws> <table> --where <col><op><value>
 ```
@@ -123,7 +124,21 @@ Combine several `--where` flags for AND. Use `@null` for SQL NULL — a bare `nu
 literal text.
 
 `--returning` hands back the rows as stored, which is **the only way to learn a generated
-key**: a UUID default leaves nothing to query back by.
+key**: a UUID default leaves nothing to query back by. It is off unless asked, so a bulk
+load is not held in memory twice.
+
+### Reloading an export: `upsert`
+
+`rows upsert --on-conflict <col>[,<col>]` inserts what is new and replaces what already
+exists under those columns, so re-running the same load is a no-op instead of a UNIQUE
+violation. Reach for it whenever the source is a file that gets regenerated — a nightly
+export, a spreadsheet the user keeps editing — rather than deleting the table and
+reloading it.
+
+It applies directly like `insert`, with no preview: its scope is exactly the batch you
+supplied, not a filter that might match more than you pictured. Every row must carry the
+conflict columns, and what it replaced is recorded with a before-image, so an overwrite
+is as recoverable as a delete.
 
 A value is checked against the column's type before it is written. A number carrying a
 thousands separator is the usual casualty — SQLite would store `"1,200"` as text in an
@@ -157,9 +172,15 @@ That is deliberate and it is the failure this catches most often: a misspelled `
 would otherwise render a table with no filter and no complaint. If validation reports an
 unknown property, you have a typo, not a missing feature.
 
-The full contract — every component type, its required and optional fields, the allowed
-filter operators and controls — is in `references/dsl.md`. Read it before writing a
-specification; the shapes are small but exact.
+A `filter` component must declare `targets`, naming the components on its page it drives
+and, optionally, the query parameter each one binds. It is required rather than optional
+because a control the user can change to no effect is the exact failure this DSL exists
+to reject — and the parameter name is checked against the SQL, so a rename surfaces at
+validation instead of as an empty table.
+
+The full contract — every component type, its required and optional fields, `targets`,
+`source.filter`, the allowed filter operators and controls — is in `references/dsl.md`.
+Read it before writing a specification; the shapes are small but exact.
 
 A working example using all five component types, with the migrations that back it, is
 in `examples/`. Start from it rather than from memory.
@@ -216,6 +237,29 @@ paging repeats rows on one page and skips them on the next.
 Components declare the same three in `source`, which is where they belong — the
 specification knows how many rows a table needs, and a renderer left to guess will
 hardcode a number in its own code.
+
+## Serving it
+
+`start` exposes the published applications over HTTP and keeps serving after you exit.
+Two flags decide how a browser reaches it:
+
+```sh
+agent-board start --port 4000 --static ./ui            # same-origin, no CORS involved
+agent-board start --port 4000 --cors http://localhost:5173   # a separate dev server
+```
+
+Prefer `--static <dir>`. Any request matching no API route is served from that directory,
+which makes the page same-origin and removes the CORS question entirely; paths resolving
+outside the directory are refused.
+
+`--cors <origin>` is for the case where the page is genuinely served elsewhere. It is
+repeatable and it **will not accept `*`** — `start` configures no authorization hook, so
+every workspace is served without restriction and a wildcard would let any page the user
+visits read all of them. Name the origins, or use `--static`.
+
+If you are writing that UI, the routes it calls and the request body they take are in
+`references/http.md`. A page fetches `application` to learn what to draw and posts to
+`queries/<name>` for rows; it never sends SQL.
 
 ## When something fails
 

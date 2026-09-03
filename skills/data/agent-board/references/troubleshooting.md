@@ -80,8 +80,19 @@ Strip separators and units in the script that produces the JSON.
 
 **`Insert failed: UNIQUE constraint failed: items.id`**
 
-The row already exists. There is no upsert yet — filter for it and `rows update`, or
-delete first.
+The row already exists. If you are reloading a file that gets regenerated, that is what
+`rows upsert --on-conflict <col>` is for — it replaces what is already there instead of
+failing. For a one-off collision, filter for it and `rows update`.
+
+**`Upsert needs --on-conflict <column>[,<column>] naming the columns that identify a row.`**
+
+Without it there is no way to tell an update from a duplicate. Name the column or columns
+that identify a row — usually the primary key, or whatever carries the UNIQUE index.
+
+**`Row 3 is missing "id", which identifies the row.`**
+
+Every row in an upsert batch must carry the conflict columns; a row without them cannot
+be matched against what exists. Fix it in the script that produced the JSON.
 
 **`Insert failed: NOT NULL constraint failed: items.name`**
 
@@ -100,6 +111,24 @@ default there is nothing to query back by afterwards, so ask for it at insert ti
 current version with `inspect`, confirm the newer version is not something you need, and
 publish against it.
 
+**`"filter" requires "targets".` / `"targets" must be a non-empty array — a filter that drives nothing.`**
+
+A `filter` component has to name what it drives. Add `targets: [{ component: "<id>" }]`,
+or `{ component: "<id>", parameter: "<name>" }` to bind one of that query's parameters.
+The target must be another component on the same page that reads data.
+
+**`targets[0]: "component" must name a component on this page. Available: …`**
+
+The id is misspelled, or the component lives on a different page. Filters drive only
+their own page. `a filter cannot target itself` and `"<id>" reads no data, so it cannot
+be filtered` are the neighbouring cases.
+
+**`targets[0]: "orders_by_plan" does not declare parameter "plan".`**
+
+The target's saved query has no `:plan` in its SQL, or it is not in that query's
+`parameters`. The binding is checked at validation precisely so a rename shows up here
+rather than as an empty table in the browser.
+
 **`failed validation with N error(s)`**
 
 Each line names a path such as `pages[0] ("overview").components[1]`. An
@@ -113,11 +142,35 @@ and the database disagree: a column was renamed, a table does not exist yet, or 
 functions hit malformed data. Run the statement with `agent-board query <ws> "<sql>"` to
 see the raw error, then fix the SQL or add the migration it needs.
 
+## Serving
+
+**`--cors will not accept "*".`**
+
+`start` configures no authorization hook, so every workspace is served without
+restriction and a wildcard would let any page the user visits read all of them. Name the
+origins, or serve the page with `start --static <dir>` and skip CORS entirely.
+
+**`Directory not found: <path>`**
+
+`--static` resolves its argument before binding the port, so a typo fails immediately
+rather than serving 404s. Pass a directory that exists.
+
+**`{"error":"query_not_found","message":"Saved query \"x\" is not published."}`**
+
+The server reads statement text only from the published specification, so a query you
+added to the file but did not publish does not exist. Publish, then retry.
+
+**`{"error":"not_found"}` for a page you expected to serve**
+
+Static files are tried only after the API routes, and only for `GET`/`HEAD`. Check the
+file is under the `--static` directory — paths that resolve outside it are refused —
+and that `/` maps to an `index.html`. `references/http.md` lists every route.
+
 ## Queries
 
 **`Query must be read-only — it must start with SELECT or WITH.`**
 
-`query` reads; it never writes. Change data with `rows insert|update|delete`.
+`query` reads; it never writes. Change data with `rows insert|upsert|update|delete`.
 
 **`Missing value for parameter(s): plan. Supply every declared parameter.`**
 

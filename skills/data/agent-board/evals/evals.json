@@ -12,14 +12,28 @@
       "id": 1,
       "name": "extend-existing",
       "prompt": "here's my agent-board project (workspace is called analytics, already published at v1). can you add a line chart of orders over time to the overview page, plus a date range filter? don't break what's there",
-      "expected_output": "Reads current state with inspect first, adds a saved query aggregating by date, adds line_chart with a valid mapping and a filter with control daterange, publishes with --expect-version matching the observed version, verifies with query --saved.",
+      "expected_output": "Reads current state with inspect first, adds a saved query aggregating by date, adds line_chart with a valid mapping and a filter with control daterange that declares targets naming the components it drives, publishes with --expect-version matching the observed version, verifies with query --saved.",
       "files": []
     },
     {
       "id": 2,
       "name": "silent-skipped-migration",
-      "prompt": "something weird — i added workspaces/analytics/migrations/0002_add_notes.sql and ran migrate but it just says 'up to date (database v3)' and the notes table doesn't exist. the sql is definitely valid, i ran it by hand in sqlite3 and it worked fine",
+      "prompt": "something weird \u2014 i added workspaces/analytics/migrations/0002_add_notes.sql and ran migrate but it just says 'up to date (database v3)' and the notes table doesn't exist. the sql is definitely valid, i ran it by hand in sqlite3 and it worked fine",
       "expected_output": "Diagnoses that migrate only applies versions above the highest already applied, so a gap-filling file is skipped silently. Fix is to renumber above the current max (0004_). Should not suggest editing the ledger or re-running with a flag.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "reload-regenerated-export",
+      "prompt": "i've got a csv my ops team re-exports every morning (~800 customer rows, same ids each time, some values change). i loaded it into my agent-board workspace 'crm' yesterday with rows insert. how do i reload today's without it blowing up on duplicate ids or me having to wipe the table first?",
+      "expected_output": "Recommends rows upsert --on-conflict <id column>, notes it applies directly with no preview and records a before-image so an overwrite is recoverable. Writes a conversion script rather than transcribing the CSV by hand. Should not suggest delete-then-insert or a migration.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "serve-a-browser-ui",
+      "prompt": "the analytics workspace is published and `agent-board query --saved` gives me the right numbers, but i want an actual page my team can open. i tried fetching from a vite dev server on 5173 and got cors errors, so i set --cors '*' and it refused. what's the right way to do this?",
+      "expected_output": "Explains the wildcard refusal (start configures no authorize hook, so a wildcard exposes every workspace to any page the user visits), recommends building a page and serving it with start --static <dir> so it is same-origin, and points at the routes: GET application, POST queries/<name> with a body of parameters/limit/offset/sort/filter. Names --cors <origin> as the alternative if the page must stay on 5173.",
       "files": []
     }
   ]

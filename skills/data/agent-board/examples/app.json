@@ -20,7 +20,8 @@
       "title": "Overview",
       "components": [
         { "id": "plan-filter", "type": "filter", "field": "plan", "control": "select",
-          "label": "Plan", "optionsQuery": "plans" },
+          "label": "Plan", "optionsQuery": "plans", "operator": "eq",
+          "targets": [{ "component": "orders-table", "parameter": "plan" }] },
         { "id": "revenue", "type": "metric_card", "title": "Fulfilled revenue",
           "source": { "type": "saved_query", "query": "revenue_total" }, "value": "revenue" },
         { "id": "revenue-chart", "type": "bar_chart", "title": "Revenue by user",
