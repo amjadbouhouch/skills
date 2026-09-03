@@ -205,9 +205,17 @@ SQL is available for your own verification, but anything a user will run must be
 query in the published specification.
 
 Use `--json` when you need to read the result programmatically rather than display it.
-Results are capped (default 100 rows, `--limit` to raise); check `truncated` in the JSON
-output before drawing conclusions about totals from returned rows — aggregate in SQL
-instead of counting rows client-side.
+Results are capped at 100 rows unless `--limit` says otherwise, so check `truncated`
+before drawing conclusions about totals — aggregate in SQL rather than counting the rows
+you got back.
+
+`--sort <column>` orders by a column of the result, `-column` for descending, repeatable.
+`--offset <n>` skips rows. Pair them: without a sort there is no defined row order, so
+paging repeats rows on one page and skips them on the next.
+
+Components declare the same three in `source`, which is where they belong — the
+specification knows how many rows a table needs, and a renderer left to guess will
+hardcode a number in its own code.
 
 ## When something fails
 

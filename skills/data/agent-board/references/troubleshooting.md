@@ -117,7 +117,7 @@ see the raw error, then fix the SQL or add the migration it needs.
 
 **`Query must be read-only — it must start with SELECT or WITH.`**
 
-Writes go in migrations. There is no other write path.
+`query` reads; it never writes. Change data with `rows insert|update|delete`.
 
 **`Missing value for parameter(s): plan. Supply every declared parameter.`**
 
@@ -127,6 +127,17 @@ Pass `--param plan=<value>`. Every declared parameter is required, with no defau
 
 The parameter name is not in the statement. Unknown names are refused rather than
 ignored, because the driver would otherwise bind NULL and return plausible wrong rows.
+
+**`Cannot sort by "revenue" — the query returns: id, name, total.`**
+
+Sort names must match the query's *output* columns, not the table's. Alias the
+expression in SQL and sort on the alias. The check exists because SQLite would accept
+the name as a string literal and silently return the rows unordered.
+
+**Rows repeat or go missing between pages**
+
+`--offset` without `--sort`. SQL has no inherent order, so each page is free to come
+back differently. Always sort when paging.
 
 **Results look short**
 

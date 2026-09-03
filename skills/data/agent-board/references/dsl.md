@@ -44,8 +44,9 @@ a page.
 ## Components
 
 Each type declares what it requires and everything it may carry. `source` is
-`{ type: "saved_query", query: <saved query name>, parameters?: {…} }` and `query` must
-name a saved query that exists.
+`{ type: "saved_query", query: <saved query name>, parameters?, limit?, offset?, sort? }`
+and `query` must name a saved query that exists. See "How many rows, in what order"
+below for the last three.
 
 | Type | Reads data | Required | Optional |
 |---|---|---|---|
@@ -65,6 +66,31 @@ Plus `id` and `type` on every component, and `source` on every type that reads d
   `optionsQuery` names a saved query supplying the choices for a `select`.
 - `filter` on a data table is `{ field, operator, value }`, with `operator` one of
   `eq`, `neq`, `lt`, `lte`, `gt`, `gte`, `contains`.
+
+## How many rows, in what order
+
+A component states its own data needs; a renderer should not have to guess them.
+
+```json
+"source": {
+  "type": "saved_query", "query": "products_list",
+  "limit": 500, "sort": ["-revenue", "name"]
+}
+```
+
+- `limit` — integer 1..10000. **Omitting it caps the component at 100 rows**, and a
+  table over that renders its first page while saying nothing about the rest. Set it
+  whenever the query can return more.
+- `sort` — array of result columns, `-name` for descending. The names must be columns
+  the query returns, not table columns; alias in SQL and sort on the alias.
+- `offset` — rows to skip. **Only meaningful with `sort`.** SQL has no inherent row
+  order, so paging an unordered query repeats rows on one page and skips them on the
+  next, and nothing reports it.
+
+The same three are accepted in the query request body, so a renderer can page and
+re-sort without republishing. `truncated` in the response means "a further row exists" —
+it is what a next-page control should be driven from, and it is exact: a page ending on
+the last row reports `false`.
 
 ## Minimal valid application
 
