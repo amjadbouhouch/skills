@@ -110,7 +110,8 @@ half a file. `.stignore` stops Syncthing from syncing `.tmp-*` files.
 - **Names are lowercase** because the Windows and macOS filesystems ignore case and Linux does
   not. On the first two, `Orch` and `orch` would be one inbox; on Linux they would be two.
 - **Stamps come from each machine's clock**, so order across machines is approximate.
-- **`.stignore` is not synced by Syncthing.** `join` writes it on each machine.
+- **This fleet may share a synced root with others**, one subfolder per topic. Syncthing reads
+  `.stignore` only at that root, and never syncs it, so `join` writes it there on each machine.
 - **If writes here are denied**, your sandbox does not include this folder. Ask the user to allow
   it. Codex: start it with `--add-dir <this-folder>`.
 - **Garbled accents in a message** usually come from the shell's console encoding, not the file.

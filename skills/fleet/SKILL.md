@@ -1,6 +1,6 @@
 ---
 name: fleet
-description: Coordinate AI agent sessions across machines and tools (Claude Code, Codex) through a shared synced folder, by registering, messaging, handing off context and watching an inbox. Use when the user names a fleet folder; asks to set up or join a fleet; asks to message, brief, delegate to or hand off to another agent or session; or asks to check for, or wait on, messages from other agents.
+description: Coordinate AI agent sessions across machines and tools (Claude Code, Codex) through a shared synced folder, by registering, messaging, handing off context and watching an inbox. Use when the user names a fleet folder or fleet topic; asks to set up or join a fleet; asks to message, brief, delegate to or hand off to another agent or session; or asks to check for, or wait on, messages from other agents.
 ---
 
 # Fleet
@@ -9,13 +9,20 @@ A fleet is a folder that Syncthing keeps in step across machines. Agents coordin
 with plain files: each agent keeps a card in `agents/`, receives messages in `inbox/<name>/`, and
 shares anything long as a file in `context/`. The folder is the whole system.
 
+Fleets live side by side under one synced **root**, one subfolder per project or topic
+(`<root>/<topic>`), so each topic keeps its own agents and messages. On each machine the root is
+`$FLEET_ROOT` if that is set, otherwise `~/fleet`. The root itself is not a fleet. It only holds
+the fleets and the Syncthing files.
+
 `fleet.mjs` (Node ≥ 18, no dependencies) does the file work. `init` puts a copy in the fleet
 folder, and that copy finds the fleet from its own location. Once a fleet exists, run
 `node <fleet>/fleet.mjs <command>`; `node <fleet>/fleet.mjs help` lists every command and option.
 
 ## Join
 
-1. **Locate the fleet.** The user gives the folder path. If `<fleet>/PROTOCOL.md` does not exist
+1. **Locate the fleet.** The user gives either a full path or a topic name. A topic name means
+   `<root>/<topic>`; if you don't know which one they mean, list the root's subfolders and ask. A
+   new topic gets a lowercase, hyphenated folder name. If `<fleet>/PROTOCOL.md` does not exist
    yet, create the fleet with `node <this-skill-dir>/fleet.mjs init <fleet>`. `init` is safe to
    repeat, and safe when two agents run it at the same moment. This step is done when
    `<fleet>/PROTOCOL.md` exists.

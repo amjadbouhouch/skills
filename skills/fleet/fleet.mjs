@@ -106,8 +106,17 @@ function writeAtomic(file, content) {
   fs.renameSync(tmp, file);
 }
 
+// Syncthing reads .stignore only at the root of a synced folder (the directory holding .stfolder),
+// and a fleet is often a subfolder of that root. Fall back to the fleet itself if no marker is found.
+function syncRoot(fleet) {
+  for (let dir = fleet; ; dir = path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, '.stfolder'))) return dir;
+    if (path.dirname(dir) === dir) return fleet;
+  }
+}
+
 function ensureStignore(fleet) {
-  const file = path.join(fleet, '.stignore');
+  const file = path.join(syncRoot(fleet), '.stignore');
   const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
   if (text.split(/\r?\n/).includes(STIGNORE)) return;
   const sep = text && !text.endsWith('\n') ? '\n' : '';
