@@ -105,11 +105,16 @@ function requireOrchestrator(fleet, name) {
 
 // ---- server and auth ----
 
+// On Windows npm installs t3 as t3.cmd, which Node runs only through a shell. The shell joins
+// args unquoted, so every arg passed here must be free of spaces and shell characters.
+const runT3 = (args, stdio) => execFileSync('t3', args, { encoding: 'utf8', stdio, shell: process.platform === 'win32' });
+
 function t3(args) {
   try {
-    return execFileSync('t3', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    return runT3(args, ['ignore', 'pipe', 'pipe']);
   } catch (e) {
-    die(`"t3 ${args.join(' ')}" failed: ${e.code === 'ENOENT' ? 't3 CLI not on PATH' : String(e.stderr || e.message).trim()}`);
+    const missing = e.code === 'ENOENT' || /not recognized/i.test(String(e.stderr));
+    die(`"t3 ${args.join(' ')}" failed: ${missing ? 't3 CLI not on PATH' : String(e.stderr || e.message).trim()}`);
   }
 }
 
@@ -141,13 +146,13 @@ function connect(opt) {
     die(`no T3 Code server running here (${runtime} missing). Start T3 Code, or pass --server <name>`);
   }
   // t3 prints a SQLite warning on stderr; the JSON is on stdout.
-  const issued = JSON.parse(t3(['auth', 'session', 'issue', '--ttl', '15m', '--label', 'fleet spawn', '--json']));
+  const issued = JSON.parse(t3(['auth', 'session', 'issue', '--ttl', '15m', '--label', 'fleet-spawn', '--json']));
   return {
     url: origin,
     token: issued.token,
     close() {
       try {
-        execFileSync('t3', ['auth', 'session', 'revoke', issued.sessionId], { stdio: 'ignore' });
+        runT3(['auth', 'session', 'revoke', issued.sessionId], 'ignore');
       } catch {}
     },
   };
