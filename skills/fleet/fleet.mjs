@@ -17,8 +17,9 @@ const STIGNORE = '(?d).tmp-*';
 
 const USAGE = `usage: node fleet.mjs <command> [options]
 
-  init <dir>                          create a fleet folder (or refresh its PROTOCOL.md and fleet.mjs)
-  join --as <name> --role "<text>" [--tool <claude-code|codex|...>] [--force]
+  init <dir>                          create a fleet folder (or refresh its PROTOCOL.md, fleet.mjs, spawn.mjs)
+  join --as <name> --role "<text>" [--tool <claude-code|codex|...>] [--orchestrator] [--force]
+                                      --orchestrator: you run this fleet and alone start sessions
   who                                 list agents, their status and unread counts
   status --as <name> <idle|busy|blocked|offline> [--task "<text>"]
   send --as <name> --to <name[,name]|all> --subject "<text>"
@@ -171,6 +172,8 @@ function unread(fleet, name) {
     .sort();
 }
 
+const isOrchestrator = (card) => String(card?.orchestrator) === 'true';
+
 const idOf = (file) => file.slice(0, -3).split('--').pop();
 
 function needName(opt) {
@@ -205,7 +208,7 @@ const commands = {
     if (!pos[1]) die('usage: init <dir>');
     const dir = path.resolve(pos[1]);
     for (const d of ['agents', 'inbox', 'context']) fs.mkdirSync(path.join(dir, d), { recursive: true });
-    for (const f of ['PROTOCOL.md', 'fleet.mjs']) {
+    for (const f of ['PROTOCOL.md', 'fleet.mjs', 'spawn.mjs']) {
       const from = path.join(HERE, f);
       const to = path.join(dir, f);
       if (path.resolve(from) !== path.resolve(to)) fs.copyFileSync(from, to);
@@ -226,12 +229,17 @@ const commands = {
           `Pick another name, or add --force if you are that agent resuming here.`,
       );
     }
+    // A fleet has one orchestrator, the only agent that starts sessions (spawn.mjs checks this field).
+    const orchestrator = Boolean(opt.orchestrator) || isOrchestrator(old);
+    const rival = orchestrator && listCards(fleet).find((c) => c.name !== name && isOrchestrator(c));
+    if (rival && !opt.force) die(`${rival.name} is already this fleet's orchestrator. Join without --orchestrator, or add --force to take over`);
     const t = now();
     writeCard(fleet, {
       name,
       role: typeof opt.role === 'string' ? opt.role : old?.role ?? null,
       tool: typeof opt.tool === 'string' ? opt.tool : old?.tool ?? null,
       machine: host,
+      ...(orchestrator ? { orchestrator: 'true' } : {}),
       status: 'idle',
       task: null,
       joined: old?.joined ?? t,
@@ -239,7 +247,7 @@ const commands = {
     });
     fs.mkdirSync(path.join(inboxDir(fleet, name), 'done'), { recursive: true });
     ensureStignore(fleet);
-    console.log(`joined as ${name} on ${host}. unread: ${unread(fleet, name).length}`);
+    console.log(`joined as ${name}${orchestrator ? ' (orchestrator)' : ''} on ${host}. unread: ${unread(fleet, name).length}`);
   },
 
   who({ opt }) {
@@ -249,10 +257,11 @@ const commands = {
     const rows = [['NAME', 'STATUS', 'SEEN', 'UNREAD', 'TOOL', 'MACHINE', 'ROLE / TASK']];
     for (const c of cards) {
       const doing = [c.role, c.task && `now: ${c.task}`].filter(Boolean).join(' | ');
-      rows.push([c.name, c.status ?? '?', fmtAge(ageMs(c.last_seen)), String(unread(fleet, c.name).length), c.tool ?? '?', c.machine ?? '?', doing]);
+      rows.push([isOrchestrator(c) ? `${c.name}*` : c.name, c.status ?? '?', fmtAge(ageMs(c.last_seen)), String(unread(fleet, c.name).length), c.tool ?? '?', c.machine ?? '?', doing]);
     }
     const widths = rows[0].map((_, i) => Math.max(...rows.map((r) => r[i].length)));
     for (const r of rows) console.log(r.map((v, i) => (i === r.length - 1 ? v : v.padEnd(widths[i]))).join('  '));
+    if (cards.some(isOrchestrator)) console.log('* orchestrator');
   },
 
   status({ pos, opt }) {

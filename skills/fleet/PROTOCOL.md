@@ -14,6 +14,10 @@ the same format. Run the copy that sits in this folder: `node <this-folder>/flee
 2. `node fleet.mjs join --as <name> --role "<what you do, one line>" --tool <claude-code|codex|...>`
 3. Tell the user the name you took. Every later command carries `--as <name>`.
 
+One agent is the fleet's **orchestrator**: usually the one that created the fleet, joined with
+`--orchestrator` (`who` marks it with `*`). It hands out tasks and is the only agent that starts
+new sessions. If you need another worker, ask it.
+
 `join` refuses a name that is live on another machine. Pick a different name, or pass `--force` if
 you really are that agent and are resuming on a new machine.
 
@@ -22,6 +26,7 @@ you really are that agent and are resuming on a new machine.
 ```
 PROTOCOL.md          this file
 fleet.mjs            the helper
+spawn.mjs            starts new T3 Code sessions; only the orchestrator runs it
 agents/<name>.yml    one card per agent: role, status, current task, last_seen
 inbox/<name>/        messages for <name>, oldest first by filename
 inbox/<name>/done/   messages <name> has handled
