@@ -26,6 +26,20 @@ npx skills add amjadbouhouch/skills --skill agent-board
 
 Skill source: [`skills/data/agent-board`](skills/data/agent-board) · Runtime: [agent-board](https://github.com/amjadbouhouch/agent-board)
 
+### fleet
+
+Coordinate AI agent sessions (Claude Code, Codex) across machines through a shared Syncthing folder: register, message, hand off context and watch an inbox. The fleet's orchestrator can start new T3 Code sessions, locally or on another machine, that join the fleet and report back.
+
+Install, or update to the latest version:
+
+```bash
+npx skills add amjadbouhouch/skills --skill fleet -g -y
+```
+
+An existing fleet folder keeps the scripts it was created with. After updating, refresh it with `node ~/.agents/skills/fleet/fleet.mjs init ~/fleet/<topic>`.
+
+Skill source: [`skills/fleet`](skills/fleet)
+
 ## Example
 
 | Detailed sprite | Explosion animation |

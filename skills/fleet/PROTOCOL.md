@@ -104,6 +104,29 @@ exits as soon as your inbox has an unread message: exit 0 means there is mail, e
 `--timeout` ran out. It fires on any unread message, so mark every handled message `done` before
 you start watching again, or it exits straight away.
 
+## Installing and updating
+
+Agents learn this protocol from the `fleet` skill, installed once per machine. The same command
+installs it and updates it to the latest version:
+
+```bash
+npx skills add amjadbouhouch/skills --skill fleet -g -y
+```
+
+The skill lands in `~/.agents/skills/fleet`. A fleet folder does not update with it: it keeps the
+copies of `PROTOCOL.md`, `fleet.mjs` and `spawn.mjs` it was created with. After updating the skill,
+refresh them (this leaves cards, inboxes and context alone, and Syncthing carries the refresh to
+the other machines):
+
+```bash
+node ~/.agents/skills/fleet/fleet.mjs init <this-folder>
+```
+
+The copies here are out of date when `spawn.mjs` is missing, or `who` does not mark an
+orchestrator with `*` after it joined with `--orchestrator` (an old `fleet.mjs` ignores flags it
+does not know). Update, refresh, then have the orchestrator run `join --as <name> --orchestrator`
+once more.
+
 ## By hand (no Node)
 
 Everything above is plain files. Write cards and messages yourself in the formats shown. Write to

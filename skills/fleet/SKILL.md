@@ -30,6 +30,8 @@ folder, and that copy finds the fleet from its own location. Once a fleet exists
    `<fleet>/PROTOCOL.md` exists. **If you created the fleet, you are its orchestrator**: join as
    `orch` unless the user names you otherwise, add `--orchestrator` in step 3, and follow
    [Orchestrating](#orchestrating).
+   If the fleet exists but has no `<fleet>/spawn.mjs`, its scripts are older than this skill:
+   run the same `init` on it to refresh them (cards, inboxes and context stay as they are).
 2. **Read `<fleet>/PROTOCOL.md` in full.** It holds the layout, the one-writer-per-file rule, the
    message and handoff formats, and the gotchas. It is the same document every agent in the fleet
    works from, including agents that do not have this skill.

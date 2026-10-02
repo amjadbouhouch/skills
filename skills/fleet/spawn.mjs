@@ -94,7 +94,12 @@ function requireOrchestrator(fleet, name) {
     die(`${name} has not joined this fleet`);
   }
   if (!/^orchestrator:\s*"?true"?\s*$/m.test(card)) {
-    die(`only the fleet's orchestrator starts sessions, and ${name} is not it. Ask the orchestrator for a new worker instead`);
+    die(
+      `only the fleet's orchestrator starts sessions, and ${name}'s card does not say it is one.\n` +
+        `If ${name} is the orchestrator, run: node "${path.join(fleet, 'fleet.mjs')}" join --as ${name} --orchestrator\n` +
+        `then check that "who" marks it with *. If it does not, this fleet's scripts are out of date; see ` +
+        `"Installing and updating" in PROTOCOL.md. Otherwise ask the orchestrator for a new worker.`,
+    );
   }
 }
 
