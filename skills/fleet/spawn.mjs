@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const NAME_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
-const DEFAULT_PROVIDER = 'claudeAgent';
+const DEFAULT_DRIVER = 'claudeAgent';
 const DEFAULT_MODEL = 'claude-opus-5-5';
 const DEFAULT_EFFORT = 'high';
 const TOOL_OF = { claudeAgent: 'claude-code', codex: 'codex' };
@@ -21,12 +21,13 @@ const START_TIMEOUT_MS = 10 * 60 * 1000; // creating a worktree of a big repo ta
 const USAGE = `usage: node spawn.mjs <command> [options]
 
   projects                            list the server's projects
+  providers                           list the server's provider instances
   threads [--project <p>] [--last <n>]
                                       list recent threads, newest first (default 10)
   new --as <orchestrator> --project <p> (--worktree | --checkout)
       (--prompt "<text>" | --prompt-file <path>)
       [--name <worker> [--role "<text>"] | --no-fleet] [--title "<text>"]
-      [--provider <claudeAgent|codex|...>] [--model <id>] [--effort <low|medium|high|...>] [--plan]
+      [--provider <instance id or display name>] [--model <id>] [--effort <low|medium|high|...>] [--plan]
       [--branch <new-branch>] [--base <branch>] [--from-origin] [--no-setup]
                                       start a session and send it the prompt; prints the thread id
   read <thread-id> [--last <n>]       print the thread's last messages (default 4)
@@ -40,7 +41,9 @@ const USAGE = `usage: node spawn.mjs <command> [options]
     --name       the name the session joins this fleet under (default: made from the title);
                  it replies to you when done
     --no-fleet   the session gets only your prompt and does not join the fleet
-    model        ${DEFAULT_PROVIDER} / ${DEFAULT_MODEL} / effort ${DEFAULT_EFFORT} unless --provider, --model, --effort say otherwise
+    model        ${DEFAULT_MODEL}, effort ${DEFAULT_EFFORT}, on the server's one enabled ${DEFAULT_DRIVER} instance,
+                 unless --provider, --model, --effort say otherwise. --provider takes an instance id
+                 or the name T3 Code shows for it; "providers" lists them
 
   <p> is a project id, title, folder name or full path.
 
@@ -150,6 +153,7 @@ function connect(opt) {
   return {
     url: origin,
     token: issued.token,
+    local: true,
     close() {
       try {
         runT3(['auth', 'session', 'revoke', issued.sessionId], 'ignore');
@@ -177,26 +181,34 @@ async function api(srv, method, route, body) {
 
 // One call over the server's WebSocket RPC (Effect RPC, JSON framing). The HTTP dispatch endpoint
 // skips the UI's bootstrap step, which is what creates the thread and its worktree in one go.
-async function rpc(srv, tag, payload, timeoutMs = 15000) {
+// Rejects on failure; rpc() below dies instead.
+async function tryRpc(srv, tag, payload, timeoutMs = 15000) {
   if (typeof WebSocket === 'undefined') die(`Node ${process.versions.node} has no WebSocket; use Node 22 or newer`);
   const { ticket } = await api(srv, 'POST', '/api/auth/websocket-ticket');
   const ws = new WebSocket(`${srv.url.replace(/^http/, 'ws')}/ws?wsTicket=${encodeURIComponent(ticket)}`);
-  return new Promise((resolve) => {
-    const timer = setTimeout(() => die(`${tag}: no answer from ${srv.url} after ${timeoutMs / 1000}s`), timeoutMs);
+  return new Promise((resolve, reject) => {
+    const fail = (msg) => {
+      clearTimeout(timer);
+      ws.close();
+      reject(new Error(msg));
+    };
+    const timer = setTimeout(() => fail(`${tag}: no answer from ${srv.url} after ${timeoutMs / 1000}s`), timeoutMs);
     ws.onopen = () => ws.send(JSON.stringify({ _tag: 'Request', id: '1', tag, payload, headers: [] }));
-    ws.onerror = () => die(`${tag}: WebSocket to ${srv.url} failed`);
+    ws.onerror = () => fail(`${tag}: WebSocket to ${srv.url} failed`);
     ws.onmessage = (e) => {
       const data = JSON.parse(String(e.data));
       for (const msg of Array.isArray(data) ? data : [data]) {
         if (msg._tag !== 'Exit' || msg.requestId !== '1') continue;
+        if (msg.exit._tag !== 'Success') return fail(`${tag} failed: ${JSON.stringify(msg.exit.cause ?? msg.exit).slice(0, 600)}`);
         clearTimeout(timer);
         ws.close();
-        if (msg.exit._tag !== 'Success') die(`${tag} failed: ${JSON.stringify(msg.exit.cause ?? msg.exit).slice(0, 600)}`);
         resolve(msg.exit.value);
       }
     };
   });
 }
+
+const rpc = (...args) => tryRpc(...args).catch((e) => die(e.message));
 
 const snapshot = (srv) => api(srv, 'GET', '/api/orchestration/snapshot');
 const live = (items) => items.filter((x) => !x.deletedAt);
@@ -214,12 +226,63 @@ function findProject(snap, key) {
   die(`no project "${key}". Run "projects" to list them, or add it on that machine with: t3 project add <path>`);
 }
 
-function pickModel(opt) {
-  if (typeof opt.provider === 'string' && typeof opt.model !== 'string') die('--provider needs --model');
+// The server's provider instances, keyed by id, the way T3 Code itself derives them: the entries
+// under providerInstances, plus one per built-in driver from the older "providers" settings.
+// The instance id is the key, not the name T3 Code shows ("CPAMC" can be claudeAgent_cpamc).
+async function providerInstances(srv) {
+  const settings = await rpc(srv, 'server.getSettings', {});
+  const all = { ...settings.providerInstances };
+  for (const [driver, config] of Object.entries(settings.providers ?? {})) all[driver] ??= { driver, config };
   return {
-    instanceId: typeof opt.provider === 'string' ? opt.provider : DEFAULT_PROVIDER,
-    model: typeof opt.model === 'string' ? opt.model : DEFAULT_MODEL,
-    options: [{ id: 'effort', value: typeof opt.effort === 'string' ? opt.effort : DEFAULT_EFFORT }],
+    defaultSelection: settings.defaultModelSelection,
+    list: Object.entries(all).map(([id, v]) => ({
+      id,
+      driver: v.driver,
+      name: v.displayName ?? '',
+      enabled: v.enabled ?? v.config?.enabled ?? true,
+    })),
+  };
+}
+
+const describe = (list) => list.map((p) => `  ${p.id}  driver ${p.driver}${p.name ? `  "${p.name}"` : ''}  ${p.enabled ? 'enabled' : 'disabled'}`).join('\n');
+
+// Checked before anything is created, so a disabled or unknown provider leaves no worktree behind.
+async function pickModel(srv, opt) {
+  const { list, defaultSelection } = await providerInstances(srv);
+  let inst;
+  if (typeof opt.provider === 'string') {
+    const k = opt.provider.toLowerCase();
+    inst = list.find((p) => p.id === opt.provider);
+    if (!inst) {
+      const hits = list.filter((p) => p.name.toLowerCase() === k || p.id.toLowerCase() === k);
+      if (hits.length > 1) die(`--provider "${opt.provider}" matches several instances; pass an id:\n${describe(hits)}`);
+      inst = hits[0];
+    }
+    if (!inst) die(`no provider instance "${opt.provider}" on ${srv.url}. Instances:\n${describe(list)}`);
+    if (!inst.enabled) die(`provider instance ${inst.id} is disabled in T3 Code settings on ${srv.url}. Instances:\n${describe(list)}`);
+  } else {
+    const hits = list.filter((p) => p.driver === DEFAULT_DRIVER && p.enabled);
+    if (hits.length !== 1) {
+      die(
+        `${hits.length ? 'several' : 'no'} enabled ${DEFAULT_DRIVER} instances on ${srv.url}; choose one with --provider <id>, ` +
+          `or enable one in T3 Code settings. Instances:\n${describe(list)}`,
+      );
+    }
+    inst = hits[0];
+  }
+  let model = opt.model;
+  if (typeof model !== 'string') {
+    if (inst.driver === DEFAULT_DRIVER) model = DEFAULT_MODEL;
+    else if (defaultSelection?.instanceId === inst.id) model = defaultSelection.model;
+    else die(`no default model for ${inst.id} (driver ${inst.driver}); pass --model <id>`);
+  }
+  return {
+    driver: inst.driver,
+    selection: {
+      instanceId: inst.id,
+      model,
+      options: [{ id: 'effort', value: typeof opt.effort === 'string' ? opt.effort : DEFAULT_EFFORT }],
+    },
   };
 }
 
@@ -259,8 +322,27 @@ function nameFromTitle(fleet, title) {
 
 async function currentBranch(srv, cwd) {
   const res = await rpc(srv, 'vcs.listRefs', { cwd, refKind: 'local' });
-  if (!res.isRepo) return { isRepo: false, branch: null };
-  return { isRepo: true, branch: res.refs.find((r) => r.current)?.name ?? null };
+  if (!res.isRepo) return { isRepo: false, branch: null, names: [] };
+  return { isRepo: true, branch: res.refs.find((r) => r.current)?.name ?? null, names: res.refs.map((r) => r.name) };
+}
+
+// A start that failed after its worktree was made would leave the worktree and branch behind, and a
+// retry with the same --branch would collide with them. Remove both.
+async function rollback(srv, root, threadId, branch) {
+  const thread = (await snapshot(srv)).threads.find((t) => t.id === threadId);
+  const left = [];
+  if (thread?.worktreePath) {
+    await tryRpc(srv, 'vcs.removeWorktree', { cwd: root, path: thread.worktreePath, force: true }).catch(() =>
+      left.push(`git -C "${root}" worktree remove --force "${thread.worktreePath}"`),
+    );
+  }
+  if (srv.local) {
+    try {
+      execFileSync('git', ['-C', root, 'rev-parse', '--verify', '--quiet', `refs/heads/${branch}`], { stdio: 'ignore' });
+      execFileSync('git', ['-C', root, 'branch', '-D', branch], { stdio: 'ignore' });
+    } catch {}
+  } else left.push(`git -C "${root}" branch -D ${branch}   (if it exists)`);
+  console.error(`spawn: rolled back the failed start${left.length ? `; on ${srv.url}, still run:\n  ${left.join('\n  ')}` : ''}`);
 }
 
 // ---- commands ----
@@ -271,6 +353,10 @@ const commands = {
     if (!rows.length) return console.log('no projects');
     const w = [0, 1].map((i) => Math.max(...rows.map((r) => r[i].length)));
     for (const r of rows) console.log(`${r[0].padEnd(w[0])}  ${r[1].padEnd(w[1])}  ${r[2]}`);
+  },
+
+  async providers({ srv }) {
+    console.log(describe((await providerInstances(srv)).list));
   },
 
   async threads({ srv, opt }) {
@@ -295,10 +381,10 @@ const commands = {
     const project = findProject(snap, opt.project);
     const prompt = readPrompt(opt);
     const title = typeof opt.title === 'string' ? opt.title : prompt.trim().split(/\r?\n/)[0].slice(0, 60) || 'New session';
-    const modelSelection = pickModel(opt);
+    const { driver, selection: modelSelection } = await pickModel(srv, opt);
     const worker = opt['no-fleet'] ? null : opt.name ?? nameFromTitle(fleet, title);
     const brief = worker
-      ? fleetBrief({ fleet, worker, orch: opt.as, role: typeof opt.role === 'string' ? opt.role : title, tool: TOOL_OF[modelSelection.instanceId] || modelSelection.instanceId })
+      ? fleetBrief({ fleet, worker, orch: opt.as, role: typeof opt.role === 'string' ? opt.role : title, tool: TOOL_OF[driver] || driver })
       : '';
 
     const repo = await currentBranch(srv, project.workspaceRoot);
@@ -309,13 +395,15 @@ const commands = {
       const base = typeof opt.base === 'string' ? opt.base : repo.branch;
       if (!base) die('the checkout is on a detached HEAD; pass --base <branch>');
       branch = typeof opt.branch === 'string' ? opt.branch : `t3code/${crypto.randomBytes(4).toString('hex')}`;
+      // Also what makes rollback safe: the branch it deletes is always one this start created.
+      if (repo.names.includes(branch)) die(`branch ${branch} already exists in ${project.workspaceRoot}; pick another --branch`);
       prepareWorktree = { projectCwd: project.workspaceRoot, baseBranch: base, branch, requireWorktree: true, ...(opt['from-origin'] ? { startFromOrigin: true } : {}) };
     }
 
     const mode = { runtimeMode: 'full-access', interactionMode: opt.plan ? 'plan' : 'default' };
     const threadId = uuid();
     const createdAt = now();
-    await rpc(
+    await tryRpc(
       srv,
       'orchestration.dispatchCommand',
       {
@@ -333,9 +421,13 @@ const commands = {
         createdAt,
       },
       START_TIMEOUT_MS,
-    );
+    ).catch(async (e) => {
+      console.error(`spawn: ${e.message}`);
+      if (prepareWorktree) await rollback(srv, project.workspaceRoot, threadId, branch);
+      process.exit(1);
+    });
     const where = prepareWorktree ? `new worktree on ${branch} from ${prepareWorktree.baseBranch}` : `checkout${branch ? ` on ${branch}` : ''}`;
-    console.log(`started ${threadId} "${title}" in ${project.title} (${where}; ${modelSelection.model}, effort ${modelSelection.options[0].value}) on ${srv.url}`);
+    console.log(`started ${threadId} "${title}" in ${project.title} (${where}; ${modelSelection.instanceId} ${modelSelection.model}, effort ${modelSelection.options[0].value}) on ${srv.url}`);
     console.log(worker ? `it joins the fleet as ${worker} and replies to ${opt.as}` : 'it does not join the fleet (--no-fleet)');
   },
 

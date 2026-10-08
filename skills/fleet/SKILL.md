@@ -95,6 +95,16 @@ These rules are strict:
 2. **The model is Claude Opus 5.5 at high effort** (`spawn.mjs` defaults). Pass `--provider`,
    `--model` or `--effort` only when the user has asked for a different model or effort, for
    that session or for the fleet.
+
+   Providers are T3 Code *instances*, read from the server's settings. Without `--provider`,
+   `spawn.mjs` uses the server's one enabled Claude instance, whatever its id (the built-in
+   `claudeAgent` may be disabled in favour of, say, `claudeAgent_cpamc`). If there are none or
+   several, it stops and lists them; then ask the user which one and pass `--provider`.
+   `--provider` takes the instance id or the name T3 Code shows for it (`--provider CPAMC`);
+   `spawn.mjs providers` lists them all. A Claude instance defaults to Opus 5.5; any other
+   needs `--model` unless it is the server's default instance. The provider is checked before
+   anything is created, and a start that fails after its worktree was made removes the worktree
+   and branch again.
 3. **Choose where the session works; `spawn.mjs` will not guess.** Pass one of:
    - `--worktree`: a new git worktree on a new branch, cut from the checkout's current branch
      (`--base <branch>` to choose another, `--from-origin` to cut from `origin/<base>`). The
