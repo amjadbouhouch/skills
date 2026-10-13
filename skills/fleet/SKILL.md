@@ -105,6 +105,16 @@ These rules are strict:
    needs `--model` unless it is the server's default instance. The provider is checked before
    anything is created, and a start that fails after its worktree was made removes the worktree
    and branch again.
+
+   For example, a Codex session: `--provider codex --model gpt-6-luna`. Codex model ids look
+   like `gpt-6-luna`, `gpt-5.6-luna`, `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-sol`, `gpt-5.6-sol`
+   and `gpt-5.6-terra`; use the id, not the display name (`GPT-6-Luna`). Which ones exist
+   depends on the user's T3 Code settings.
+
+   A Claude session on another model: `--model claude-sonnet-5-5`. Claude model ids look like
+   `claude-opus-5-5` (default), `claude-sonnet-5-5`, `claude-haiku-5-5`, the custom
+   `claude-opus-5-5[1m]` (1M context), and older ones such as `claude-opus-5`,
+   `claude-fable-5-1`, `claude-fable-5` and `claude-opus-4-8` down to `claude-opus-4-5`.
 3. **Choose where the session works; `spawn.mjs` will not guess.** Pass one of:
    - `--worktree`: a new git worktree on a new branch, cut from the checkout's current branch
      (`--base <branch>` to choose another, `--from-origin` to cut from `origin/<base>`). The
