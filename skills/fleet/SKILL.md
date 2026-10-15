@@ -68,7 +68,14 @@ exit 2 means it timed out. Pick the form that fits your harness:
   user wants you to wait, and run it again after each exit 2.
 
 The watcher fires on any unread message, so mark handled messages `done` before you start it
-again.
+again: `done --as <name> <id> && watch --as <name> --once --timeout <sec>` in one background
+command re-arms it in one step.
+
+A background command has its own time limit in the harness (Claude Code background Bash: 30 min
+unless the call sets a longer `timeout`, at most 2 h). Give the background call the longest
+timeout and `watch --timeout` a little under it (`--timeout 7000` under 7,200,000 ms). When the
+harness stops a watcher anyway, check `inbox` (nothing is lost: the messages stay unread) and
+start it again.
 
 ## Orchestrating
 
@@ -81,6 +88,26 @@ needs background, and asks for a reply. Track open tasks by message id; replies 
 Keep a watcher running so replies wake you. When every task you sent has a reply, report the
 results to the user.
 
+- **Don't stop to wait for the user's go.** When a plan exists and a milestone lands, report it
+  and start the next step (or give a worker its next task) in the same turn. Ask the user only for
+  what only they can give: logins, data, product decisions, outward-facing actions.
+- **Keep your plan in a file.** Write `context/<you>--state.md` (goal, live settings, each worker's
+  task and thread id, next steps, standing rules) and update it at every milestone. Long sessions
+  get compacted; the file is what survives. If you have a memory, note there to read it first.
+- **Keep workers busy, with priorities.** While a worker waits on another one's output, give it a
+  side task that serves the goal, and say what preempts it ("drop it when `<file>` lands").
+- **Check what you are told before relaying it.** Read the report file, not only the message, and
+  change the plan when a finding changes the problem (a "review load" that turns out to be right
+  answers stuck under a threshold is a coverage problem, not a filter problem).
+- **Merge and verify.** Merge a worker's branch when its report is done, run the tests, push,
+  and snapshot the report into the repo if the project keeps one.
+- **Resources are yours to grant.** One machine's GPU, RAM, disk and memory commit are shared:
+  workers ask before a heavy job, you grant one at a time with the guards that apply (e.g. stop
+  if free disk drops under N GB), and you tell the others who holds it.
+- **Agent caps include sub-agents.** When the user caps parallel agents, a worker's sub-agents
+  count. Put the number of sub-agents a worker may run at once in its brief, and send it again
+  (message + wake-up) when the user changes it.
+
 ## Starting sessions
 
 `spawn.mjs` starts a new session in T3 Code, on this machine or another, and sends it its first
@@ -92,19 +119,22 @@ These rules are strict:
 1. **Only the orchestrator starts sessions.** `spawn.mjs new` refuses unless `--as` names the
    fleet's orchestrator. A worker that needs help asks the orchestrator for a new worker, and
    never runs `spawn.mjs` itself.
-2. **The model is Claude Opus 5.5 at high effort** (`spawn.mjs` defaults). Pass `--provider`,
-   `--model` or `--effort` only when the user has asked for a different model or effort, for
-   that session or for the fleet.
+2. **Defaults: Claude Opus 5.5 at medium effort, or Codex GPT-6.1 Sol at high effort**
+   (`--provider codex`; `spawn.mjs` fills in `gpt-6.1-sol` and `high`). Pass another
+   `--provider`, `--model` or `--effort` only when the user has asked for it, for that session or
+   for the fleet. Codex sessions are the way to run more work in parallel when the user caps
+   Claude agents (the cap does not count Codex, but Codex has its own usage limit: start one only
+   when the user says Codex is available). The machine's RAM, GPU, disk and memory commit bound
+   everyone, so keep one heavy GPU job at a time whoever runs it. Give a Codex worker
+   self-contained tasks (build, bench, script, review) with the same brief and done criterion as a
+   Claude worker; it cannot start sub-agents and cannot watch its inbox in the background (see
+   [Waking and steering workers](#waking-and-steering-workers)).
 
-   Providers are T3 Code *instances*, read from the server's settings. Without `--provider`,
-   `spawn.mjs` uses the server's one enabled Claude instance, whatever its id (the built-in
-   `claudeAgent` may be disabled in favour of, say, `claudeAgent_cpamc`). If there are none or
-   several, it stops and lists them; then ask the user which one and pass `--provider`.
-   `--provider` takes the instance id or the name T3 Code shows for it (`--provider CPAMC`);
-   `spawn.mjs providers` lists them all. A Claude instance defaults to Opus 5.5; any other
-   needs `--model` unless it is the server's default instance. The provider is checked before
-   anything is created, and a start that fails after its worktree was made removes the worktree
-   and branch again.
+   Effort is a per-driver option: T3 Code calls it `effort` for Claude and `reasoningEffort` for
+   Codex, and silently ignores a wrong id (the session then runs at the driver's default, low for
+   Codex). `spawn.mjs` picks the right id. A session's effort is stored on the thread (what
+   T3 Code's composer shows): change it with `spawn.mjs effort <thread> <level>`, and look at the
+   composer after starting sessions.
 
    For example, a Codex session: `--provider codex --model gpt-6-luna`. Codex model ids look
    like `gpt-6-luna`, `gpt-5.6-luna`, `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-sol`, `gpt-5.6-sol`
@@ -115,6 +145,16 @@ These rules are strict:
    `claude-opus-5-5` (default), `claude-sonnet-5-5`, `claude-haiku-5-5`, the custom
    `claude-opus-5-5[1m]` (1M context), and older ones such as `claude-opus-5`,
    `claude-fable-5-1`, `claude-fable-5` and `claude-opus-4-8` down to `claude-opus-4-5`.
+
+   Providers are T3 Code *instances*, read from the server's settings. Without `--provider`,
+   `spawn.mjs` uses the server's one enabled Claude instance, whatever its id (the built-in
+   `claudeAgent` may be disabled in favour of, say, `claudeAgent_cpamc`). If there are none or
+   several, it stops and lists them; then ask the user which one and pass `--provider`.
+   `--provider` takes the instance id or the name T3 Code shows for it (`--provider CPAMC`);
+   `spawn.mjs providers` lists them all. A Claude instance defaults to Opus 5.5; any other
+   needs `--model` unless it is the server's default instance. The provider is checked before
+   anything is created, and a start that fails after its worktree was made removes the worktree
+   and branch again.
 3. **Choose where the session works; `spawn.mjs` will not guess.** Pass one of:
    - `--worktree`: a new git worktree on a new branch, cut from the checkout's current branch
      (`--base <branch>` to choose another, `--from-origin` to cut from `origin/<base>`). The
@@ -147,7 +187,34 @@ Then:
   CLI. `spawn.mjs` needs Node 22 or newer.
 - **Check on it.** The worker's reply reaches your inbox. Keep a watcher running for it, and use
   `who` to see whether the worker has joined. `spawn.mjs threads` shows each session's branch,
-  and `spawn.mjs read <thread-id>` prints its latest messages if it seems stuck. T3 Code may
-  rename a new `t3code/<random>` branch to fit the task, so read the branch from there, not from
-  the `new` output.
+  and `spawn.mjs read <thread-id>` prints its latest messages if it seems stuck.
+  T3 Code may rename a new `t3code/<random>` branch to fit the task, so read the branch from
+  there, not from the `new` output.
 - **Sessions run in full-access mode.**
+
+## Waking and steering workers
+
+A fleet message only reaches a session that is reading its inbox. A worker whose turn has ended
+(every Codex worker between tasks; a Claude worker that ended its turn, or whose turn died on
+"Claude gave up after repeated API errors") reads nothing until a new turn starts. So:
+
+1. **Write the message to the fleet** (`send`; long content as a `context/` file), so it is on
+   record and in the inbox.
+2. **Then wake the session**: `spawn.mjs send <thread-id> --prompt "Orch: new message in your
+   inbox (<id>): <one line>"`. This posts a user message into the thread with the thread's own
+   model and effort, as typing it in T3 Code would. Do it for every message to a Codex worker,
+   and for a Claude worker that is not running a watcher. `spawn.mjs threads` gives thread ids.
+3. **Check, don't guess.** `spawn.mjs read <thread-id> --last 2` shows what a worker last said;
+   `who` shows its card. Ask long-running workers to keep a short `STATUS` note so a restart can
+   resume.
+
+Steering:
+- `spawn.mjs effort <thread-id> <level>` changes the stored effort (composer and later turns).
+  `--effort` on `send` also stores it. Effort asked for in the prompt text does not.
+- `spawn.mjs stop <thread-id>` interrupts its turn and stops its session (thread and worktree
+  stay), e.g. to restart one that started with the wrong model; `--turn-only` keeps the session
+  and its background jobs.
+- **Long-lived processes die with T3 Code.** A server or training run a session starts is a child
+  of T3 Code, and a T3 Code restart or reboot kills it. Run anything that must outlive the
+  session detached: an OS service or scheduled task (Windows: a logon scheduled task), and note
+  how to restart it in a context file.

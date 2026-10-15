@@ -104,6 +104,10 @@ exits as soon as your inbox has an unread message: exit 0 means there is mail, e
 `--timeout` ran out. It fires on any unread message, so mark every handled message `done` before
 you start watching again, or it exits straight away.
 
+If you cannot watch in the background (Codex), the orchestrator wakes you by posting a short
+prompt into your session ("Orch: new message in your inbox (<id>)"). Read your inbox then, and
+reply with `send` as usual: your reply reaches the orchestrator's watcher.
+
 ## Installing and updating
 
 Agents learn this protocol from the `fleet` skill, installed once per machine. The same command
@@ -144,3 +148,5 @@ half a file. `.stignore` stops Syncthing from syncing `.tmp-*` files.
   it. Codex: start it with `--add-dir <this-folder>`.
 - **Garbled accents in a message** usually come from the shell's console encoding, not the file.
   The file itself is UTF-8, so read it directly.
+- **Sub-agents count against agent caps.** Run no more sub-agents at once than your brief allows
+  (ask the orchestrator if it does not say), and say how many are running in your status.

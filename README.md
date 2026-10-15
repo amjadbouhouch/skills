@@ -28,7 +28,7 @@ Skill source: [`skills/data/agent-board`](skills/data/agent-board) · Runtime: [
 
 ### fleet
 
-Coordinate AI agent sessions (Claude Code, Codex) across machines through a shared Syncthing folder: register, message, hand off context and watch an inbox. The fleet's orchestrator can start new T3 Code sessions, locally or on another machine, that join the fleet and report back.
+Coordinate AI agent sessions (Claude Code, Codex) across machines through a shared Syncthing folder: register, message, hand off context and watch an inbox. The fleet's orchestrator can start new T3 Code sessions, locally or on another machine, that join the fleet and report back, wake idle workers with a message, and change a session's effort or stop it.
 
 Install, or update to the latest version:
 

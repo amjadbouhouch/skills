@@ -13,7 +13,14 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const NAME_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
 const DEFAULT_DRIVER = 'claudeAgent';
 const DEFAULT_MODEL = 'claude-opus-5-5';
+// Default model per driver when --model is not given (--provider codex = GPT-6.1 Sol).
+const DEFAULT_MODEL_OF = { [DEFAULT_DRIVER]: DEFAULT_MODEL, codex: 'gpt-6.1-sol' };
+// T3 Code's id for the effort option differs per driver; a wrong id is ignored silently and the
+// session runs at the driver's default (Codex: low).
+const EFFORT_OPTION_OF = { claudeAgent: 'effort', codex: 'reasoningEffort', grok: 'reasoningEffort', cursor: 'reasoning', opencode: 'variant' };
 const DEFAULT_EFFORT = 'high';
+// Default effort per driver when --effort is not given (Claude sessions at medium, Codex at high).
+const DEFAULT_EFFORT_OF = { claudeAgent: 'medium', codex: 'high' };
 const TOOL_OF = { claudeAgent: 'claude-code', codex: 'codex' };
 const SERVERS_FILE = path.join(os.homedir(), '.config', 'fleet', 'servers.json');
 const START_TIMEOUT_MS = 10 * 60 * 1000; // creating a worktree of a big repo takes a while
@@ -31,6 +38,11 @@ const USAGE = `usage: node spawn.mjs <command> [options]
       [--branch <new-branch>] [--base <branch>] [--from-origin] [--no-setup]
                                       start a session and send it the prompt; prints the thread id
   read <thread-id> [--last <n>]       print the thread's last messages (default 4)
+  effort <thread-id> <level>          set a thread's stored effort (composer + its next turns)
+  stop <thread-id> [--turn-only]      interrupt the thread's running turn and stop its session
+                                      (--turn-only: keep the session and its background jobs)
+  send <thread-id> (--prompt "<text>" | --prompt-file <path>) [--effort <level>]
+                                      post a message into a thread (wakes a session whose turn ended)
 
   new:
     --as         your fleet name; your card must be the fleet's orchestrator (join --orchestrator)
@@ -41,9 +53,10 @@ const USAGE = `usage: node spawn.mjs <command> [options]
     --name       the name the session joins this fleet under (default: made from the title);
                  it replies to you when done
     --no-fleet   the session gets only your prompt and does not join the fleet
-    model        ${DEFAULT_MODEL}, effort ${DEFAULT_EFFORT}, on the server's one enabled ${DEFAULT_DRIVER} instance,
+    model        ${DEFAULT_MODEL}, effort ${DEFAULT_EFFORT_OF.claudeAgent}, on the server's one enabled ${DEFAULT_DRIVER} instance,
                  unless --provider, --model, --effort say otherwise. --provider takes an instance id
-                 or the name T3 Code shows for it; "providers" lists them
+                 or the name T3 Code shows for it; "providers" lists them.
+                 --provider codex defaults to ${DEFAULT_MODEL_OF.codex}, effort ${DEFAULT_EFFORT_OF.codex}
 
   <p> is a project id, title, folder name or full path.
 
@@ -244,6 +257,14 @@ async function providerInstances(srv) {
   };
 }
 
+// The effort option id of a thread's provider instance (instance ids like claudeAgent_cpamc are
+// not driver names, so EFFORT_OPTION_OF is looked up by the instance's driver).
+async function effortOptionId(srv, instanceId) {
+  const { list } = await providerInstances(srv);
+  const driver = list.find((p) => p.id === instanceId)?.driver ?? instanceId;
+  return EFFORT_OPTION_OF[driver] ?? 'effort';
+}
+
 const describe = (list) => list.map((p) => `  ${p.id}  driver ${p.driver}${p.name ? `  "${p.name}"` : ''}  ${p.enabled ? 'enabled' : 'disabled'}`).join('\n');
 
 // Checked before anything is created, so a disabled or unknown provider leaves no worktree behind.
@@ -272,7 +293,7 @@ async function pickModel(srv, opt) {
   }
   let model = opt.model;
   if (typeof model !== 'string') {
-    if (inst.driver === DEFAULT_DRIVER) model = DEFAULT_MODEL;
+    if (DEFAULT_MODEL_OF[inst.driver]) model = DEFAULT_MODEL_OF[inst.driver];
     else if (defaultSelection?.instanceId === inst.id) model = defaultSelection.model;
     else die(`no default model for ${inst.id} (driver ${inst.driver}); pass --model <id>`);
   }
@@ -281,7 +302,7 @@ async function pickModel(srv, opt) {
     selection: {
       instanceId: inst.id,
       model,
-      options: [{ id: 'effort', value: typeof opt.effort === 'string' ? opt.effort : DEFAULT_EFFORT }],
+      options: [{ id: EFFORT_OPTION_OF[inst.driver] ?? 'effort', value: typeof opt.effort === 'string' ? opt.effort : (DEFAULT_EFFORT_OF[inst.driver] ?? DEFAULT_EFFORT) }],
     },
   };
 }
@@ -429,6 +450,60 @@ const commands = {
     const where = prepareWorktree ? `new worktree on ${branch} from ${prepareWorktree.baseBranch}` : `checkout${branch ? ` on ${branch}` : ''}`;
     console.log(`started ${threadId} "${title}" in ${project.title} (${where}; ${modelSelection.instanceId} ${modelSelection.model}, effort ${modelSelection.options[0].value}) on ${srv.url}`);
     console.log(worker ? `it joins the fleet as ${worker} and replies to ${opt.as}` : 'it does not join the fleet (--no-fleet)');
+  },
+
+  // Post a user message into an existing thread, as typing it in T3 Code would: it starts a new
+  // turn with the thread's own model selection. Wakes a session that ended its turn (Codex).
+  async send({ srv, pos, opt }) {
+    if (!pos[1]) die('usage: send <thread-id> (--prompt "<text>" | --prompt-file <path>)');
+    const threadId = pos[1];
+    const text = readPrompt(opt);
+    const { thread } = await api(srv, 'GET', `/api/orchestration/threads/${encodeURIComponent(threadId)}`);
+    if (!thread?.modelSelection) die(`thread ${threadId} has no model selection`);
+    // --effort changes the effort for this turn on (same option id the thread already uses)
+    if (typeof opt.effort === 'string') {
+      const opts = thread.modelSelection.options?.length ? thread.modelSelection.options : [{ id: await effortOptionId(srv, thread.modelSelection.instanceId) }];
+      thread.modelSelection = { ...thread.modelSelection, options: [{ ...opts[0], value: opt.effort }, ...opts.slice(1)] };
+      // the thread's stored selection (what T3 Code's composer shows and later turns use) changes too
+      await rpc(srv, 'orchestration.dispatchCommand', { type: 'thread.meta.update', commandId: uuid(), threadId, modelSelection: thread.modelSelection, createdAt: now() });
+    }
+    const createdAt = now();
+    await rpc(srv, 'orchestration.dispatchCommand', {
+      type: 'thread.turn.start',
+      commandId: uuid(),
+      threadId,
+      message: { messageId: uuid(), role: 'user', text, attachments: [] },
+      modelSelection: thread.modelSelection,
+      runtimeMode: thread.runtimeMode ?? 'full-access',
+      interactionMode: thread.interactionMode ?? 'default',
+      createdAt,
+    });
+    const effort = thread.modelSelection.options?.[0]?.value;
+    console.log(`sent to ${threadId} (${thread.modelSelection.instanceId} ${thread.modelSelection.model}${effort ? `, effort ${effort}` : ''})`);
+  },
+
+  // Set a thread's stored effort (what the composer shows and its next turns use), without a message.
+  async effort({ srv, pos }) {
+    if (!pos[1] || !pos[2]) die('usage: effort <thread-id> <level>');
+    const [, threadId, level] = pos;
+    const { thread } = await api(srv, 'GET', `/api/orchestration/threads/${encodeURIComponent(threadId)}`);
+    if (!thread?.modelSelection) die(`thread ${threadId} has no model selection`);
+    const opts = thread.modelSelection.options?.length ? thread.modelSelection.options : [{ id: await effortOptionId(srv, thread.modelSelection.instanceId) }];
+    const modelSelection = { ...thread.modelSelection, options: [{ ...opts[0], value: level }, ...opts.slice(1)] };
+    await rpc(srv, 'orchestration.dispatchCommand', { type: 'thread.meta.update', commandId: uuid(), threadId, modelSelection, createdAt: now() });
+    const { thread: after } = await api(srv, 'GET', `/api/orchestration/threads/${encodeURIComponent(threadId)}`);
+    console.log(`${threadId}: ${JSON.stringify(after.modelSelection.options)}`);
+  },
+
+  // Interrupt the running turn and stop the provider session; the thread and its worktree stay.
+  // --turn-only interrupts the running turn but keeps the session (its background jobs) alive.
+  async stop({ srv, pos, opt }) {
+    if (!pos[1]) die('usage: stop <thread-id> [--turn-only]');
+    const threadId = pos[1];
+    await rpc(srv, 'orchestration.dispatchCommand', { type: 'thread.turn.interrupt', commandId: uuid(), threadId, createdAt: now() });
+    if (opt['turn-only']) return console.log(`interrupted the turn of ${threadId}`);
+    await rpc(srv, 'orchestration.dispatchCommand', { type: 'thread.session.stop', commandId: uuid(), threadId, createdAt: now() });
+    console.log(`stopped ${threadId}`);
   },
 
   async read({ srv, pos, opt }) {
