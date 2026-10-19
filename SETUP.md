@@ -84,6 +84,30 @@ npx skills add amjadbouhouch/skills --skill fleet -g -y
 
 Check: `~/.agents/skills/fleet/SKILL.md` exists.
 
+### grill-with-docs
+
+Stress-tests a plan against the project's domain model, sharpens terminology, and updates CONTEXT.md and ADRs as decisions settle. It calls the `grilling` and `domain-modeling` skills, so install those with it. Source: https://github.com/mattpocock/skills
+
+Requires Node.js (for `npx`).
+
+```bash
+npx skills add https://github.com/mattpocock/skills --skill grill-with-docs --skill grilling --skill domain-modeling -g -y
+```
+
+Check: `~/.agents/skills/grill-with-docs/SKILL.md`, `~/.agents/skills/grilling/SKILL.md` and `~/.agents/skills/domain-modeling/SKILL.md` exist.
+
+### wizard
+
+Writes a bash script that walks a human step by step through a tedious manual procedure, such as configuring third-party services or writing `.env` values and GitHub secrets. Source: https://github.com/mattpocock/skills
+
+Requires Node.js (for `npx`).
+
+```bash
+npx skills add https://github.com/mattpocock/skills --skill wizard -g -y
+```
+
+Check: `~/.agents/skills/wizard/SKILL.md` exists.
+
 ## CLIs
 
 ### Notion CLI (`ntn`)
