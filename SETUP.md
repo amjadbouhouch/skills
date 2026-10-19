@@ -53,6 +53,23 @@ claude mcp add-json --scope user android-mcp '{"command":"uvx","args":["--python
 
 Check: `claude mcp get android-mcp` shows the server connected, and `adb devices` lists a device.
 
+### rea
+
+Reverse engineers apps, games and websites: gives the agent tools to inspect the code behind them. Its setup command registers the MCP server and installs a workflow skill. Source: https://github.com/morluto/rea
+
+Requires Node.js 22.19+ (or 24.11+, or 26+) and npm. Native binary analysis also needs Hopper, Ghidra or IDA. Leave that out unless the user asks for it.
+
+Preview the plan, show it to the user, then apply it:
+
+```bash
+npx -y rea-agents@latest setup --client claude_code --dry-run
+npx -y rea-agents@latest setup --client claude_code --yes
+```
+
+For another agent, swap the `--client` id (for example `codex` or `cursor`), or use `--all-detected` to configure every supported agent setup finds. Restart the agent afterwards.
+
+Check: `npx -y rea-agents@latest doctor --client claude_code --skill --json` reports ready, and `claude mcp get rea` shows the server connected.
+
 ## Skills
 
 ### fleet
