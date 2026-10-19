@@ -54,7 +54,7 @@ sessions: ask the user to open one, or run the orchestrator inside T3 Code.
 | wake / message a session | `t3_thread_send` |
 | what it said, whether it finished | `t3_thread_read`, `t3_thread_wait`, `t3_thread_list` |
 | branches and worktree paths | `t3_worktree_list` |
-| change model or effort | `t3_thread_configure` |
+| change model, effort or provider (context carries over) | `t3_thread_configure` |
 | interrupt its turn | `t3_thread_interrupt` |
 
 `t3_thread_launch` creates an ordinary top-level session, shown in the T3 Code sidebar like one
@@ -133,3 +133,15 @@ Steering:
   and later turns). Effort asked for in prompt text does not.
 - `t3_thread_interrupt` stops the running turn (thread and worktree stay), e.g. to restart one
   started with the wrong model; then `t3_thread_send` it a new prompt.
+- **Switch a session's provider without losing context** (e.g. Codex → Claude when Codex hits its
+  usage limit, or Claude → Codex to save the Claude cap). Between turns (`t3_thread_wait`, or
+  `t3_thread_interrupt` first), call `t3_thread_configure` with the other instance's
+  `modelSelection`, then `t3_thread_send` the next message. T3 Code inserts a "Provider handoff"
+  item that replays the thread's conversation to the new model, so it continues where the other
+  left off: same thread id, worktree, branch and fleet name. Tested both ways (Codex → Claude →
+  Codex): the new model recalled earlier instructions, the files written and the previous model's
+  answers without reading anything. Not carried over: the old model's tool and reasoning state and
+  attached files; a long history may be trimmed, and the handoff tells the new model to recover it
+  with `t3_thread_read`. In the message that follows the switch, tell the worker it now runs on
+  `<tool>` and to rerun `join --as <name> --tool <claude-code|codex>` (keeps its role and inbox):
+  a Claude worker can then watch its inbox in the background, a Codex worker needs you to wake it.

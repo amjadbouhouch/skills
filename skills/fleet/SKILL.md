@@ -38,7 +38,8 @@ into the fleet folder, and the copy finds the fleet from its own location: run
 otherwise, add `--orchestrator` (a fleet has one; `join` refuses a second), and read
 [references/orchestrating.md](references/orchestrating.md) before you plan any work. It covers
 splitting work, starting sessions with T3 Code's own thread tools (the fleet is only the
-communication protocol), and waking idle workers. Workers don't need it.
+communication protocol), waking idle workers, and switching a session between Claude and Codex
+without losing its context. Workers don't need it.
 
 ## Every turn once joined
 
