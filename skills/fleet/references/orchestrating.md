@@ -39,66 +39,78 @@ reply, report the results to the user.
 
 ## Starting sessions
 
-`spawn.mjs` starts a T3 Code session, on this machine or another, and sends it its first prompt.
-It shows up in the T3 Code sidebar like one the user opened, and runs in full-access mode.
-`node <fleet>/spawn.mjs help` is the reference for every option and default; the rules below are
-what it can't decide for you.
+The fleet is the communication protocol; T3 Code starts and steers the sessions. When you run
+inside T3 Code, its `t3-code` MCP server gives you tools for that (harnesses may prefix the names,
+e.g. `mcp__t3-code__t3_thread_launch`). They match the server's version, so nothing breaks when
+T3 Code updates. If you don't see them, call `orchestrator_capabilities` once directly before
+concluding they're missing (some harnesses attach them lazily). Outside T3 Code you can't start
+sessions: ask the user to open one, or run the orchestrator inside T3 Code.
 
-1. **Only the orchestrator starts sessions.** `spawn.mjs new` refuses unless `--as` names the
-   fleet's orchestrator.
-2. **Choose where it works; `spawn.mjs` won't guess.**
-   - `--worktree`: new git worktree on a new branch, cut from the checkout's current branch
-     (`--base <branch>`, or `--from-origin` for `origin/<base>`); the project's setup script runs.
-     Use it to build a feature or fix a bug, and whenever two sessions might edit one project.
-   - `--checkout`: the project's checkout itself. Use it for reading, investigating, answering
-     questions, running the app or its scripts, or continuing on the branch already checked out.
+| Goal | Tool |
+| --- | --- |
+| providers, models, effort options | `orchestrator_capabilities` |
+| projects on this server | `t3_project_list` |
+| start a worker session | `t3_thread_launch` |
+| wake / message a session | `t3_thread_send` |
+| what it said, whether it finished | `t3_thread_read`, `t3_thread_wait`, `t3_thread_list` |
+| branches and worktree paths | `t3_worktree_list` |
+| change model or effort | `t3_thread_configure` |
+| interrupt its turn | `t3_thread_interrupt` |
+
+`t3_thread_launch` creates an ordinary top-level session, shown in the T3 Code sidebar like one
+the user opened. Use it for fleet workers, not `delegate_task` (that makes a child task of your own
+thread, which can't join the fleet as a peer or outlive your session).
+
+1. **Only the orchestrator starts sessions.** Workers are told so in their brief.
+2. **Choose where it works; don't guess.** Pass `workspaceStrategy`:
+   - `{"type": "worktree", "baseRef": "<branch>", "branch": "<new-branch>", "startFromOrigin": false}`:
+     a new git worktree on a new branch, the project's setup script runs. Use it to build a
+     feature or fix a bug, and whenever two sessions might edit one project. `startFromOrigin:
+     true` cuts it from `origin/<baseRef>`.
+   - `{"type": "root"}`: the project's checkout itself. Use it for reading, investigating,
+     answering questions, running the app or its scripts. (Omitting `workspaceStrategy` also
+     means root, never your own worktree.)
 
    If the task fits neither clearly, ask the user first.
-3. **Keep the defaults** (in `spawn.mjs help`: Claude Opus at medium effort; `--provider codex`
-   gives Codex at high effort). Pass `--provider`, `--model` or `--effort` only when the user asked
-   for it, for that session or the fleet. Use model ids, not display names: `gpt-6-luna` not
-   `GPT-6-Luna`, `claude-sonnet-5-5`, `claude-opus-5-5[1m]` for 1M context. Which models exist
-   depends on the user's T3 Code settings.
+3. **Model.** `modelSelection` = `{"instanceId": "<provider instance>", "model": "<model id>",
+   "options": [{"id": "<effort option>", "value": "<level>"}]}`. Without it the session inherits
+   yours. Defaults: Claude Opus at medium effort, Codex (`gpt-6.1-sol`) at high, unless the user
+   asked for something else for that session or the fleet. Use the ids
+   `orchestrator_capabilities` lists: the instance id, not the display name (a Claude instance
+   shown as "CPAMC" can be `claudeAgent_cpamc`); model ids like `claude-opus-5-5`, `gpt-6-luna`.
+   Skip instances whose `constraints` say disabled or not installed. If several Claude instances
+   are enabled and the user hasn't said which, ask.
+4. **Effort is per driver**: the option id is `effort` for Claude and `reasoningEffort` for
+   Codex. T3 Code silently ignores the wrong id and runs at the driver's default (low for Codex).
+   Check the option ids in `orchestrator_capabilities` for other drivers.
 
 **Codex workers.** Codex is how to run more work in parallel when the user caps Claude agents (the
 cap doesn't count Codex), but it has its own usage limit: start one only when the user says Codex
 is available. Give it self-contained tasks (build, bench, script, review) with the same brief and
-done criterion as a Claude worker. It can't start sub-agents or watch its inbox in the background,
-so you wake it for every message ([below](#waking-and-steering-workers)).
-
-**Providers** are T3 Code instances from the server's settings; `spawn.mjs providers` lists them.
-Without `--provider`, `spawn.mjs` uses the one enabled Claude instance, whatever its id. If there
-are none or several, it stops and lists them: ask the user which, then pass `--provider <id or
-display name>`. A Claude instance defaults to Opus; any other instance needs `--model` unless it
-is the server's default instance. Bad providers fail
-before anything is created, and a start that fails later removes its worktree and branch.
-
-**Effort is per driver** (`effort` for Claude, `reasoningEffort` for Codex). T3 Code silently
-ignores the wrong key and falls back to the driver's default (low for Codex). `spawn.mjs` picks
-the right one, but look at T3 Code's composer after starting sessions to confirm.
+done criterion as a Claude worker. It can't watch its inbox in the background, so you wake it for
+every message ([below](#waking-and-steering-workers)).
 
 Then:
 
-- **Find the project.** `spawn.mjs projects` lists the server's projects; a session can only start
-  in one T3 Code already knows on that machine. If it's missing, ask the user, or run
-  `t3 project add <path>` there.
-- **Start a worker**:
-  `spawn.mjs new --as <you> --project <p> --worktree --title "<short>" --prompt "<task>"`.
-  `spawn.mjs` prepends a brief telling it to join, read `PROTOCOL.md`, reply to you when done, and
-  never start sessions. The prompt *is* its first task: `send` refuses a name that hasn't joined
-  yet, so don't message a new worker first, and match its reply by sender rather than by
-  `reply_to`. Its fleet name comes from the title (`"Fix refund rounding"` →
-  `fix-refund-rounding`) unless you pass `--name`; `new` prints it and the thread id. Put the done
-  criterion in the prompt, as in a task message. `--plan` starts it in plan mode. `--no-fleet` is
-  only for a one-off question you'll read with `spawn.mjs read`.
-- **Another machine**: `--server <name>` from `~/.config/fleet/servers.json` (see `help`). The
-  user sets it up once: on that machine, start T3 Code reachable (`t3 serve --host <tailnet-ip>`
-  or `--tailscale-serve`) and issue a token with
-  `t3 auth session issue --ttl 30d --label orch --token-only`. Without `--server`, `spawn.mjs` uses
-  the local server and a short-lived token from the `t3` CLI. Needs Node ≥ 22.
-- **Check on it.** Its reply reaches your inbox; `who` shows whether it joined. `spawn.mjs threads`
-  shows each session's branch (T3 Code may rename a new `t3code/<random>` branch, so read it from
-  there, not from `new`'s output), and `spawn.mjs read <thread-id>` prints its latest messages.
+- **Write the first prompt.** Pick the worker's fleet name (lowercase, hyphens; from the title:
+  `"Fix refund rounding"` → `fix-refund-rounding`) and print its brief:
+  `node <fleet>/fleet.mjs brief --as <you> --worker <name> --role "<one line>" --tool <claude-code|codex>`.
+  The `message` is that brief followed by the task with its done criterion. `send` refuses a name
+  that hasn't joined yet, so don't message a new worker first; its reply comes from that name.
+- **Launch**: `t3_thread_launch` with `projectId` (from `t3_project_list`; omit it for your own
+  project), `title`, `workspaceStrategy`, `modelSelection`, `message`, and
+  `interactionMode: "plan"` to start it in plan mode. A project T3 Code doesn't know yet needs
+  `t3_project_create` (or `t3 project add <path>` on that machine); ask the user if unsure. It returns a `threadId`: record it with
+  the worker's name in your state file. You need it to wake, read or stop the session.
+- **Check on it.** Its reply reaches your inbox; `who` shows whether it joined.
+  `t3_thread_wait` blocks until its turn ends; `t3_thread_read` shows its messages (`view:
+  "activity"` adds its commands), and `t3_worktree_list` the branch and worktree path.
+- **Another machine.** The tools start sessions on the server you run on. For another machine,
+  keep a **host** worker in the fleet running inside T3 Code there, and send it a `task`: "launch
+  `<worker>` with this brief and prompt, on this project, worktree/root, model…; reply with the
+  thread id". The host launches it with the same tools and relays wakes and stops for that
+  machine's sessions. That is the one exception to "only the orchestrator starts sessions": say
+  it in the host's brief.
 
 ## Waking and steering workers
 
@@ -108,17 +120,16 @@ every Codex worker between tasks, a Claude worker without a watcher, or one whos
 
 1. **Write the message to the fleet** (`send`; long content as a `context/` file), so it's on
    record and in the inbox.
-2. **Wake the session**: `spawn.mjs send <thread-id> --prompt "Orch: new message in your inbox
-   (<id>): <one line>"`. This posts a user message into the thread with its own model and effort,
-   like typing in T3 Code. Do it for every message to a Codex worker, and for a Claude worker not
+2. **Wake the session**: `t3_thread_send` with its `threadId` and the message
+   `"Orch: new message in your inbox (<id>): <one line>"`. It posts a user message into the
+   thread with its own model and effort, like typing in T3 Code. The default `mode: "auto"`
+   starts an idle session and steers a running turn; `mode: "queue"` waits for that turn to end. Do it for every message to a Codex worker, and for a Claude worker not
    running a watcher.
-3. **Check, don't guess.** `spawn.mjs read <thread-id> --last 2` shows what it last said; `who`
-   shows its card.
+3. **Check, don't guess.** `t3_thread_read` shows what it last said; `who` shows its card.
 
 Steering:
 
-- `spawn.mjs effort <thread-id> <level>` changes the stored effort (composer and later turns);
-  `--effort` on `send` stores it too. Effort asked for in prompt text does not.
-- `spawn.mjs stop <thread-id>` interrupts the turn and stops the session (thread and worktree
-  stay), e.g. to restart one started with the wrong model. `--turn-only` keeps the session and its
-  background jobs.
+- `t3_thread_configure` changes the thread's stored model selection, effort included (composer
+  and later turns). Effort asked for in prompt text does not.
+- `t3_thread_interrupt` stops the running turn (thread and worktree stay), e.g. to restart one
+  started with the wrong model; then `t3_thread_send` it a new prompt.

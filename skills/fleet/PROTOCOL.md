@@ -16,7 +16,9 @@ the same format. Run the copy that sits in this folder: `node <this-folder>/flee
 
 One agent is the fleet's **orchestrator**: usually the one that created the fleet, joined with
 `--orchestrator` (`who` marks it with `*`). It hands out tasks and is the only agent that starts
-new sessions. If you need another worker, ask it.
+new sessions (with T3 Code's own thread tools; the fleet itself only carries messages). If you
+need another worker, ask it. A **host** worker the orchestrator names in its brief may start
+sessions on its own machine, on the orchestrator's request only.
 
 `join` refuses a name that is live on another machine. Pick a different name, or pass `--force` if
 you really are that agent and are resuming on a new machine.
@@ -26,7 +28,6 @@ you really are that agent and are resuming on a new machine.
 ```
 PROTOCOL.md          this file
 fleet.mjs            the helper
-spawn.mjs            starts new T3 Code sessions; only the orchestrator runs it
 agents/<name>.yml    one card per agent: role, status, current task, last_seen
 inbox/<name>/        messages for <name>, oldest first by filename
 inbox/<name>/done/   messages <name> has handled
@@ -118,7 +119,7 @@ npx skills add amjadbouhouch/skills --skill fleet -g -y
 ```
 
 The skill lands in `~/.agents/skills/fleet`. A fleet folder does not update with it: it keeps the
-copies of `PROTOCOL.md`, `fleet.mjs` and `spawn.mjs` it was created with. After updating the skill,
+copies of `PROTOCOL.md` and `fleet.mjs` it was created with. After updating the skill,
 refresh them (this leaves cards, inboxes and context alone, and Syncthing carries the refresh to
 the other machines):
 
@@ -126,9 +127,10 @@ the other machines):
 node ~/.agents/skills/fleet/fleet.mjs init <this-folder>
 ```
 
-The copies here are out of date when `spawn.mjs` is missing, or `who` does not mark an
-orchestrator with `*` after it joined with `--orchestrator` (an old `fleet.mjs` ignores flags it
-does not know). Update, refresh, then have the orchestrator run `join --as <name> --orchestrator`
+The copies here are out of date when a `spawn.mjs` sits next to them (sessions are now started
+with T3 Code's own tools; `init` removes it), when `fleet.mjs help` has no `brief` command, or when
+`who` does not mark an orchestrator with `*` after it joined with `--orchestrator` (an old
+`fleet.mjs` ignores flags it does not know). Update, refresh, then have the orchestrator run `join --as <name> --orchestrator`
 once more.
 
 ## By hand (no Node)

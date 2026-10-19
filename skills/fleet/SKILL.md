@@ -13,8 +13,8 @@ Fleets live side by side under one synced **root**, one subfolder per project or
 (`<root>/<topic>`). The root is `$FLEET_ROOT` if set, otherwise `~/fleet`. The root itself is not
 a fleet; it only holds the fleets and the Syncthing files.
 
-`fleet.mjs` (Node ≥ 18, no dependencies) does the file work. `init` copies it, `spawn.mjs` and
-`PROTOCOL.md` into the fleet folder, and the copy finds the fleet from its own location: run
+`fleet.mjs` (Node ≥ 18, no dependencies) does the file work. `init` copies it and `PROTOCOL.md`
+into the fleet folder, and the copy finds the fleet from its own location: run
 `node <fleet>/fleet.mjs <command>` (`help` lists every command and option).
 
 ## Join
@@ -23,8 +23,9 @@ a fleet; it only holds the fleets and the Syncthing files.
    can't tell which topic they mean, list the root's subfolders and ask. A new topic gets a
    lowercase, hyphenated name. If `<fleet>/PROTOCOL.md` doesn't exist, create the fleet:
    `node <this-skill-dir>/fleet.mjs init <fleet>` (safe to repeat, safe when two agents race).
-   If the fleet exists but has no `spawn.mjs`, its scripts predate this skill: run the same `init`
-   to refresh them. Cards, inboxes and context are left alone.
+   If the fleet still has a `spawn.mjs`, or `node <fleet>/fleet.mjs help` has no `brief` command,
+   its scripts predate this skill: run the same `init` to refresh them (it removes `spawn.mjs`).
+   Cards, inboxes and context are left alone.
 2. **Read `<fleet>/PROTOCOL.md` in full.** It has the layout, the one-writer-per-file rule, the
    message and handoff formats, and the gotchas. Every agent in the fleet works from it, including
    agents without this skill, so it is the authority when this file and it differ.
@@ -36,7 +37,8 @@ a fleet; it only holds the fleets and the Syncthing files.
 **If you created the fleet, you are its orchestrator.** Join as `orch` unless the user names you
 otherwise, add `--orchestrator` (a fleet has one; `join` refuses a second), and read
 [references/orchestrating.md](references/orchestrating.md) before you plan any work. It covers
-splitting work, starting sessions with `spawn.mjs`, and waking idle workers. Workers don't need it.
+splitting work, starting sessions with T3 Code's own thread tools (the fleet is only the
+communication protocol), and waking idle workers. Workers don't need it.
 
 ## Every turn once joined
 

@@ -17,10 +17,13 @@ const STIGNORE = '(?d).tmp-*';
 
 const USAGE = `usage: node fleet.mjs <command> [options]
 
-  init <dir>                          create a fleet folder (or refresh its PROTOCOL.md, fleet.mjs, spawn.mjs)
+  init <dir>                          create a fleet folder (or refresh its PROTOCOL.md and fleet.mjs)
   join --as <name> --role "<text>" [--tool <claude-code|codex|...>] [--orchestrator] [--force]
                                       --orchestrator: you run this fleet and alone start sessions
   who                                 list agents, their status and unread counts
+  brief --as <orchestrator> --worker <name> [--role "<text>"] [--tool <claude-code|codex|...>]
+                                      print the preamble for a new session's first prompt:
+                                      join as <name>, reply to you, never start sessions
   status --as <name> <idle|busy|blocked|offline> [--task "<text>"]
   send --as <name> --to <name[,name]|all> --subject "<text>"
        [--type task|reply|question|handoff|note] [--reply-to <id>]
@@ -208,11 +211,14 @@ const commands = {
     if (!pos[1]) die('usage: init <dir>');
     const dir = path.resolve(pos[1]);
     for (const d of ['agents', 'inbox', 'context']) fs.mkdirSync(path.join(dir, d), { recursive: true });
-    for (const f of ['PROTOCOL.md', 'fleet.mjs', 'spawn.mjs']) {
+    for (const f of ['PROTOCOL.md', 'fleet.mjs']) {
       const from = path.join(HERE, f);
       const to = path.join(dir, f);
       if (path.resolve(from) !== path.resolve(to)) fs.copyFileSync(from, to);
     }
+    // Sessions are started with T3 Code's own tools now; an old spawn.mjs copy no longer works.
+    const stale = path.join(dir, 'spawn.mjs');
+    if (path.resolve(dir) !== path.resolve(HERE) && fs.existsSync(stale)) fs.rmSync(stale);
     ensureStignore(dir);
     console.log(`fleet ready: ${dir}\nnext: node "${path.join(dir, 'fleet.mjs')}" join --as <name> --role "..." --tool <claude-code|codex|...>`);
   },
@@ -229,7 +235,7 @@ const commands = {
           `Pick another name, or add --force if you are that agent resuming here.`,
       );
     }
-    // A fleet has one orchestrator, the only agent that starts sessions (spawn.mjs checks this field).
+    // A fleet has one orchestrator, the only agent that starts sessions (brief checks this field).
     const orchestrator = Boolean(opt.orchestrator) || isOrchestrator(old);
     const rival = orchestrator && listCards(fleet).find((c) => c.name !== name && isOrchestrator(c));
     if (rival && !opt.force) die(`${rival.name} is already this fleet's orchestrator. Join without --orchestrator, or add --force to take over`);
@@ -262,6 +268,33 @@ const commands = {
     const widths = rows[0].map((_, i) => Math.max(...rows.map((r) => r[i].length)));
     for (const r of rows) console.log(r.map((v, i) => (i === r.length - 1 ? v : v.padEnd(widths[i]))).join('  '));
     if (cards.some(isOrchestrator)) console.log('* orchestrator');
+  },
+
+  // The worker may be on another machine, so it is pointed at the fleet by topic as well as by this machine's path.
+  brief({ opt }) {
+    const fleet = resolveFleet(opt);
+    const orch = needName(opt);
+    if (!isOrchestrator(readCard(fleet, orch))) die(`only the fleet's orchestrator starts sessions, and ${orch}'s card does not say it is one`);
+    const worker = opt.worker;
+    if (typeof worker !== 'string' || !NAME_RE.test(worker)) die('missing or bad --worker <name>: lowercase letters, digits and hyphens');
+    if (readCard(fleet, worker) && !opt.force) die(`${worker} already has a card in this fleet; pick another --worker, or --force to reuse it`);
+    const role = typeof opt.role === 'string' ? opt.role : 'worker';
+    const tool = typeof opt.tool === 'string' ? opt.tool : '<claude-code|codex>';
+    const topic = path.basename(fleet);
+    const f = '<fleet>/fleet.mjs';
+    touch(fleet, orch);
+    console.log(`You are "${worker}", a worker in the agent fleet "${topic}", started by "${orch}", its orchestrator.
+
+Before the task, join the fleet. Call its folder <fleet>: on ${os.hostname()} it is ${fleet}; on another machine it is the folder "${topic}" under $FLEET_ROOT, or under ~/fleet if FLEET_ROOT is unset. Read <fleet>/PROTOCOL.md in full, then run:
+  node ${f} join --as ${worker} --role ${JSON.stringify(role)} --tool ${tool}
+Run "node ${f} status --as ${worker} busy --task ..." while you work.
+
+When the task is done (or you are blocked and need ${orch}), report back:
+  node ${f} send --as ${worker} --to ${orch} --type reply --subject "<one line>" --body "<result>"
+Then set yourself idle and watch your inbox for the next task, as PROTOCOL.md describes.
+Do not start new sessions or threads; only ${orch} does that. If the work needs another worker, ask ${orch}.
+
+Task:`);
   },
 
   status({ pos, opt }) {
