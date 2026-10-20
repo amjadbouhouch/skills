@@ -51,3 +51,13 @@ Skill source: [`skills/fleet`](skills/fleet)
 |---|---|
 | [![Animated pixel-art coin](skills/creative/pixel-art-toolkit/examples/coin.gif)](skills/creative/pixel-art-toolkit/examples/coin.gif) | [![Pixel-art orb shading stages](skills/creative/pixel-art-toolkit/examples/orb_stages.png)](skills/creative/pixel-art-toolkit/examples/orb_stages.png) |
 | [`coin.pix`](skills/creative/pixel-art-toolkit/examples/coin.pix) | [`orb.pix`](skills/creative/pixel-art-toolkit/examples/orb.pix) · [`gen_more.py`](skills/creative/pixel-art-toolkit/examples/gen_more.py) |
+
+### product-lifecycle
+
+Take a feature or fix from request to merged code: start a planner when the work needs one, get the user's approval on big plans, record findings and plan in the project's Notion task, have workers build to the project's `AGENTS.md`, code style and tests, review with `/code-review`, then merge locally and push. Built for a `fleet` orchestrator and its workers; works in a single session too.
+
+```bash
+npx skills add amjadbouhouch/skills --skill product-lifecycle -g -y
+```
+
+Skill source: [`skills/product-lifecycle`](skills/product-lifecycle) · Uses: [`ntn`](https://ntn.dev) for Notion, [`code-review`](https://github.com/mattpocock/skills) for review

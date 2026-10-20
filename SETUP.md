@@ -84,6 +84,19 @@ npx skills add amjadbouhouch/skills --skill fleet -g -y
 
 Check: `~/.agents/skills/fleet/SKILL.md` exists.
 
+### product-lifecycle
+
+The lifecycle a fleet orchestrator runs work through: planner, plan approval, Notion task, build, `/code-review`, local merge. Source: [`skills/product-lifecycle`](skills/product-lifecycle)
+
+Requires Node.js (for `npx`), the Notion CLI below, and the `code-review` skill, installed with it:
+
+```bash
+npx skills add amjadbouhouch/skills --skill product-lifecycle -g -y
+npx skills add https://github.com/mattpocock/skills --skill code-review -g -y
+```
+
+Check: `~/.agents/skills/product-lifecycle/SKILL.md` and `~/.agents/skills/code-review/SKILL.md` exist.
+
 ### grill-with-docs
 
 Stress-tests a plan against the project's domain model, sharpens terminology, and updates CONTEXT.md and ADRs as decisions settle. It calls the `grilling` and `domain-modeling` skills, so install those with it. Source: https://github.com/mattpocock/skills
