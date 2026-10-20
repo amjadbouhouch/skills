@@ -6,8 +6,13 @@ SKILL.md and `PROTOCOL.md` still apply; this adds what only the orchestrator doe
 - [Running the work](#running-the-work)
 - [Starting sessions](#starting-sessions)
 - [Waking and steering workers](#waking-and-steering-workers)
+- [Working with another project's orchestrator](#working-with-another-projects-orchestrator)
 
 ## Running the work
+
+If the `product-lifecycle` skill is installed, run implementation work through it: it decides
+when to start a planner, when a plan needs the user's approval, and how work is recorded,
+reviewed and merged. Where it asks you to wait for the user, that overrides "don't stop" below.
 
 Split the work into tasks one worker can finish without asking you anything. Run `who` to see who
 is available. When no idle worker fits, start one ([Starting sessions](#starting-sessions)) rather
@@ -145,3 +150,26 @@ Steering:
   with `t3_thread_read`. In the message that follows the switch, tell the worker it now runs on
   `<tool>` and to rerun `join --as <name> --tool <claude-code|codex>` (keeps its role and inbox):
   a Claude worker can then watch its inbox in the background, a Codex worker needs you to wake it.
+
+## Working with another project's orchestrator
+
+When two projects integrate (an app and the API it calls), each keeps its own fleet and
+orchestrator, and the two orchestrators talk through a third, shared fleet: the **bridge**.
+
+- **One bridge per pair.** Before creating one, list the root: if a bridge with the other project
+  exists, join it. Name it after both projects (`<a>-<b>`). Whoever creates it writes the
+  collaboration file below and messages the other orchestrator.
+- **The bridge has no orchestrator.** Join it without `--orchestrator`, as a peer, under a name
+  for your project (`api-orch`, `app-orch`; two `orch`s would clash). Note the bridge path and
+  both your names in your state file.
+- **Each orchestrator starts and steers sessions only in its own fleet.** Workers never join the
+  bridge or message the other orchestrator: they ask you, you ask the peer, you relay the answer.
+  Ask the peer, not the user, anything about its project.
+- **The agreement is a context file**, `context/<creator>--collaboration.md`: who owns which repo
+  and branch, where the contract lives (integration doc, OpenAPI, collection), the scope agreed
+  with the user, and the changes in flight. Only its author edits it; the peer answers with
+  messages or its own file.
+- **Announce contract changes before the other side relies on them.** The side that owns a route
+  sends a `note` in the bridge when it changes or lands; the other side builds on it only then.
+- **Watch both inboxes.** `watch` covers one fleet, so run one watcher per fleet, each with that
+  fleet's `fleet.mjs` and your name there, and re-arm each after you handle its messages.

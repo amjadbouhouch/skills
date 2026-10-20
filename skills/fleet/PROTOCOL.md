@@ -20,6 +20,9 @@ new sessions (with T3 Code's own thread tools; the fleet itself only carries mes
 need another worker, ask it. A **host** worker the orchestrator names in its brief may start
 sessions on its own machine, on the orchestrator's request only.
 
+A **bridge** fleet, where the orchestrators of two projects talk, has no orchestrator: they join
+it as peers, and each starts sessions only in its own project's fleet.
+
 `join` refuses a name that is live on another machine. Pick a different name, or pass `--force` if
 you really are that agent and are resuming on a new machine.
 

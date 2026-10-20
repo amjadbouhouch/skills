@@ -39,7 +39,8 @@ otherwise, add `--orchestrator` (a fleet has one; `join` refuses a second), and 
 [references/orchestrating.md](references/orchestrating.md) before you plan any work. It covers
 splitting work, starting sessions with T3 Code's own thread tools (the fleet is only the
 communication protocol), waking idle workers, and switching a session between Claude and Codex
-without losing its context. Workers don't need it.
+without losing its context, and working with another project's orchestrator through a shared
+**bridge** fleet (it has no orchestrator: join it as a peer). Workers don't need it.
 
 ## Every turn once joined
 
