@@ -143,6 +143,32 @@ Then ask the user to run `ntn login`, which opens a browser to sign in. On a mac
 
 Check: `ntn doctor` passes and `ntn whoami` prints the user.
 
+### agent-pm (`apm`)
+
+A command-line project manager for agents: projects, milestones, tasks and subtasks, statuses, links, claims, history. One binary with SQLite built in; every command takes `--json`. Source: https://github.com/amjadbouhouch/agent-pm
+
+macOS and Linux (x64, arm64):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/amjadbouhouch/agent-pm/main/install.sh | sh -s -- --no-modify-path
+```
+
+This puts `apm` in `~/.agent-pm/bin`. Add that directory to `PATH` in the user's shell profile. Re-run to upgrade.
+
+Windows (x64, PowerShell 5.1 or 7):
+
+```powershell
+irm https://raw.githubusercontent.com/amjadbouhouch/agent-pm/main/install.ps1 | iex
+```
+
+This puts `apm.exe` in `%USERPROFILE%\.agent-pm\bin` and offers to add it to the user `PATH`.
+
+On musl/Alpine, or with Rust installed: `cargo install --git https://github.com/amjadbouhouch/agent-pm`.
+
+Data lives in `~/.agent-pm/apm.db` (override with `--db PATH` or `$APM_DB`). Agents set `APM_AGENT` to their name; `apm guide` prints the workflow and JSON contract.
+
+Check: `apm db` prints the database path and schema version.
+
 ## Browser
 
 Install one browser tool, chosen by OS.
