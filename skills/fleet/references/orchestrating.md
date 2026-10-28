@@ -58,10 +58,12 @@ this order:
    lets the worker decide without asking.
 4. **Scope.** What's in, what's out, and the cases that must work, named; they double as the
    acceptance tests.
-5. **Quality bar.** How the worker checks its own work (tests, a screenshot beside the mockup,
-   a benchmark) and the tools it has for it.
+5. **Quality bar.** How the worker proves its own work: the tests, and using what it built the
+   way the user will (the flow in the running app, a screenshot beside the mockup, the output
+   file opened, a benchmark), with the tools it has for it.
 6. **Order and done.** What comes first, the done criterion with its commands, where to commit,
-   and what to reply with.
+   and the reply: proof for each must-work case that you can check yourself (command output,
+   test names, screenshot or file paths). A "done" without its proof goes back to the worker.
 
 When a context file is the spec, the message still states the goal, what matters most and done in
 a few lines, and points to the file for the rest: the thread and the inbox then show what the
@@ -88,13 +90,14 @@ A full first prompt, one paragraph per block:
 > work: a filtered list exports only its rows; an empty result downloads a header-only file; a
 > failed request shows the toast and keeps the filters.
 >
-> Check it yourself: vitest for those three cases, then open a file downloaded from the stub in a
+> Prove it: vitest for those three cases, then download a file from the stub, open it in a
 > spreadsheet and compare it with the sample in the plan. Follow AGENTS.md and the patterns of the
 > code around your change; ask me before adding a dependency.
 >
 > Start with the download path, then the UI. Done means `pnpm --filter web test`, `typecheck` and
 > `lint` pass. Commit on your branch; don't merge or push. Reply with the branch, the commit hash,
-> the commands with their results, and anything you did differently from the plan, with why.
+> the commands with their results, the test that covers each must-work case, the downloaded file's
+> path with a screenshot of it opened, and anything you did differently from the plan, with why.
 >
 > Fleet: you are "export-web", a worker in the agent fleet … *(the rest of `brief`'s output)*
 
@@ -106,8 +109,9 @@ A short one, when an approved context file is the spec:
 > The plan is approved and is the spec: read `context/orch--titles-build.md` in full and build it
 > on `fix/titles-language`, with no plan step. What matters most is that existing titles stay as
 > they are; only new conversations get localized titles. Done means the plan's tests pass along
-> with `pnpm test`, typecheck and lint. Reply with the branch, the commit hash and the command
-> results. Ask me only if the plan proves wrong in the code.
+> with `pnpm test`, typecheck and lint. Reply with the branch, the commit hash, the command
+> results, and the titles generated for one French and one English conversation, with an existing
+> title shown unchanged. Ask me only if the plan proves wrong in the code.
 >
 > Fleet: you are "titles-language", a worker in the agent fleet … *(the rest of `brief`'s output)*
 

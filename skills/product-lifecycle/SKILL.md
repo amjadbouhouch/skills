@@ -100,8 +100,9 @@ part in them:
 - **Order and done**: "Tests are part of the task: cover the new behaviour, and for a bug add a
   test that fails without the fix. Done means tests, typecheck and lint pass: <commands>. Commit
   on your branch; don't merge it or push the merge target. Reply with the branch, the commit
-  hash, the commands you ran with their results, and anything you did differently from the plan,
-  with why."
+  hash, the commands you ran with their results, the proof for each must-work case (the test
+  that covers it, and for a visible change a screenshot or output path from running it), and
+  anything you did differently from the plan, with why."
 
 A worker that can't meet its done criterion replies `blocked` with the reason, not a partial
 "done".
@@ -110,8 +111,10 @@ A worker that can't meet its done criterion replies `blocked` with the reason, n
 
 When a worker reports done, check it, then review it:
 
-1. In the worker's worktree (`t3_worktree_list` gives the path), rerun the test, typecheck and
-   lint commands yourself. Anything red goes back to the worker.
+1. Check the reply carries proof for each must-work case; a missing one goes back to the worker.
+   Then, in the worker's worktree (`t3_worktree_list` gives the path), rerun the test, typecheck
+   and lint commands yourself, and open the screenshots and files it names. Anything red, or proof
+   that doesn't show the case, goes back to the worker.
 2. Run `/code-review` there, with the merge target as the fixed point and the task as the spec:
    the planner's plan file, or the Notion page saved outside the repo
    (`ntn pages get <id> > /tmp/<topic>-spec.md`).
