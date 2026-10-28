@@ -4,6 +4,7 @@ Read this when your card is the fleet's orchestrator (`who` marks it with `*`). 
 SKILL.md and `PROTOCOL.md` still apply; this adds what only the orchestrator does.
 
 - [Running the work](#running-the-work)
+- [Writing a task](#writing-a-task)
 - [Starting sessions](#starting-sessions)
 - [Waking and steering workers](#waking-and-steering-workers)
 - [Working with another project's orchestrator](#working-with-another-projects-orchestrator)
@@ -16,8 +17,8 @@ reviewed and merged. Where it asks you to wait for the user, that overrides "don
 
 Split the work into tasks one worker can finish without asking you anything. Run `who` to see who
 is available. When no idle worker fits, start one ([Starting sessions](#starting-sessions)) rather
-than asking the user to open a session. Send one task per message: its goal, its done criterion,
-a context file if it needs background, and a request to reply. Track open tasks by message id
+than asking the user to open a session. Send one task per message, written as
+[Writing a task](#writing-a-task) lays out. Track open tasks by message id
 (replies carry `reply_to`). Keep a watcher running so replies wake you. When every task has a
 reply, report the results to the user.
 
@@ -41,6 +42,74 @@ reply, report the results to the user.
 - **Agent caps include sub-agents.** When the user caps parallel agents, a worker's sub-agents
   count. Put the number it may run at once in its brief, and resend (message + wake-up) when the
   user changes the cap.
+
+## Writing a task
+
+A task is the brief a capable peer works from alone, so it carries intent: what to achieve and
+what matters, leaving the how to the worker. Write it as prose, one short paragraph per block, in
+this order:
+
+1. **Goal.** The outcome in a sentence or two, told from the user's side (what they see or can
+   do), anchored to a reference the worker can look at: a mockup, an existing screen, a product.
+2. **Setting.** Repo and branch, which slice of which plan, where the spec lives, who builds what
+   in parallel and the contract between you. A context file holds the detail; this paragraph is
+   enough to start.
+3. **What matters most**, and why. The one thing to protect when trade-offs come up; it is what
+   lets the worker decide without asking.
+4. **Scope.** What's in, what's out, and the cases that must work, named; they double as the
+   acceptance tests.
+5. **Quality bar.** How the worker checks its own work (tests, a screenshot beside the mockup,
+   a benchmark) and the tools it has for it.
+6. **Order and done.** What comes first, the done criterion with its commands, where to commit,
+   and what to reply with.
+
+When a context file is the spec, the message still states the goal, what matters most and done in
+a few lines, and points to the file for the rest: the thread and the inbox then show what the
+worker is doing. A follow-up `send --type task` to a worker already on the job uses the same
+blocks, as short as its context allows.
+
+A full first prompt, one paragraph per block:
+
+> Let shop owners export their orders to CSV from the Orders page, so they can reconcile with
+> their accountant without copying rows by hand. The button and its menu follow the Figma frame
+> "Orders / Export" linked in the plan.
+>
+> This is slice B of `context/orch--plan-csv-export.md`: read its decisions and slice B first.
+> Work in `apps/web` on `feat/csv-export-web`. Worker `export-api` is building
+> `GET /orders/export?from&to&status` in parallel, returning `text/csv`; build against a stub in
+> `apps/web/src/test/handlers.ts`, and I'll tell you when it's merged.
+>
+> What matters most is that the file opens cleanly in Excel and Numbers: amounts as plain numbers,
+> ISO dates, UTF-8 with a BOM so accented customer names survive. A polished button that downloads
+> a broken file is a failed task.
+>
+> In scope: the export button, the date and status filters it takes from the list, the download,
+> and an error toast. Out of scope, as follow-ups: scheduled exports and choosing columns. Must
+> work: a filtered list exports only its rows; an empty result downloads a header-only file; a
+> failed request shows the toast and keeps the filters.
+>
+> Check it yourself: vitest for those three cases, then open a file downloaded from the stub in a
+> spreadsheet and compare it with the sample in the plan. Follow AGENTS.md and the patterns of the
+> code around your change; ask me before adding a dependency.
+>
+> Start with the download path, then the UI. Done means `pnpm --filter web test`, `typecheck` and
+> `lint` pass. Commit on your branch; don't merge or push. Reply with the branch, the commit hash,
+> the commands with their results, and anything you did differently from the plan, with why.
+>
+> Fleet: you are "export-web", a worker in the agent fleet … *(the rest of `brief`'s output)*
+
+A short one, when an approved context file is the spec:
+
+> Make new conversation titles come out in the user's language instead of always English, so a
+> French user's sidebar reads in French.
+>
+> The plan is approved and is the spec: read `context/orch--titles-build.md` in full and build it
+> on `fix/titles-language`, with no plan step. What matters most is that existing titles stay as
+> they are; only new conversations get localized titles. Done means the plan's tests pass along
+> with `pnpm test`, typecheck and lint. Reply with the branch, the commit hash and the command
+> results. Ask me only if the plan proves wrong in the code.
+>
+> Fleet: you are "titles-language", a worker in the agent fleet … *(the rest of `brief`'s output)*
 
 ## Starting sessions
 
@@ -98,9 +167,10 @@ every message ([below](#waking-and-steering-workers)).
 Then:
 
 - **Write the first prompt.** Pick the worker's fleet name (lowercase, hyphens; from the title:
-  `"Fix refund rounding"` → `fix-refund-rounding`) and print its brief:
-  `node <fleet>/fleet.mjs brief --as <you> --worker <name> --role "<one line>" --tool <claude-code|codex>`.
-  The `message` is that brief followed by the task with its done criterion. `send` refuses a name
+  `"Fix refund rounding"` → `fix-refund-rounding`). The `message` is the task
+  ([Writing a task](#writing-a-task)), then the fleet section that
+  `node <fleet>/fleet.mjs brief --as <you> --worker <name> --role "<one line>" --tool <claude-code|codex>`
+  prints: join, report back, never start sessions. `send` refuses a name
   that hasn't joined yet, so don't message a new worker first; its reply comes from that name.
 - **Launch**: `t3_thread_launch` with `projectId` (from `t3_project_list`; omit it for your own
   project), `title`, `workspaceStrategy`, `modelSelection`, `message`, and

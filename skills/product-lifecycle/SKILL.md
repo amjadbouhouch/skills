@@ -87,17 +87,21 @@ in review → done.
 
 One worker per slice, each in its own worktree on a new branch cut from the merge target
 (`workspaceStrategy: {"type": "worktree", "baseRef": "<merge target>", ...}`). Slices that touch
-the same files go to the same worker, or run one after the other. Add this to the fleet brief:
+the same files go to the same worker, or run one after the other.
 
-> Task: <slice>. Notion: <url>. <Goal, the findings that matter, the done criterion.>
-> Before coding, read AGENTS.md and the docs it points to. Follow them, and the patterns of the
-> code around your change: naming, structure, error handling, test style. Ask me before adding a
-> dependency or changing a contract outside this slice.
-> Tests are part of the task: cover the new behaviour, and for a bug add a test that fails
-> without the fix. Done means tests, typecheck and lint pass: <commands>.
-> Commit on your branch; don't merge it or push the merge target. Reply with the branch, the
-> commit hash, the commands you ran with their results, and anything you did differently from
-> the plan, with why.
+Write each worker's task in the blocks of fleet `references/orchestrating.md` → "Writing a task"
+(goal, setting, what matters most, scope, quality bar, order and done), and put the lifecycle's
+part in them:
+
+- **Setting**: the Notion task url, the plan file, and the findings that bear on this slice.
+- **Quality bar**: "Before coding, read AGENTS.md and the docs it points to. Follow them, and the
+  patterns of the code around your change: naming, structure, error handling, test style. Ask me
+  before adding a dependency or changing a contract outside this slice."
+- **Order and done**: "Tests are part of the task: cover the new behaviour, and for a bug add a
+  test that fails without the fix. Done means tests, typecheck and lint pass: <commands>. Commit
+  on your branch; don't merge it or push the merge target. Reply with the branch, the commit
+  hash, the commands you ran with their results, and anything you did differently from the plan,
+  with why."
 
 A worker that can't meet its done criterion replies `blocked` with the reason, not a partial
 "done".

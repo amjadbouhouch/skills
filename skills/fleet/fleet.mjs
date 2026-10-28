@@ -22,8 +22,8 @@ const USAGE = `usage: node fleet.mjs <command> [options]
                                       --orchestrator: you run this fleet and alone start sessions
   who                                 list agents, their status and unread counts
   brief --as <orchestrator> --worker <name> [--role "<text>"] [--tool <claude-code|codex|...>]
-                                      print the preamble for a new session's first prompt:
-                                      join as <name>, reply to you, never start sessions
+                                      print the fleet section that ends a new session's first
+                                      prompt: join as <name>, reply to you, never start sessions
   status --as <name> <idle|busy|blocked|offline> [--task "<text>"]
   send --as <name> --to <name[,name]|all> --subject "<text>"
        [--type task|reply|question|handoff|note] [--reply-to <id>]
@@ -283,18 +283,16 @@ const commands = {
     const topic = path.basename(fleet);
     const f = '<fleet>/fleet.mjs';
     touch(fleet, orch);
-    console.log(`You are "${worker}", a worker in the agent fleet "${topic}", started by "${orch}", its orchestrator.
+    console.log(`Fleet: you are "${worker}", a worker in the agent fleet "${topic}", started by "${orch}", its orchestrator.
 
-Before the task, join the fleet. Call its folder <fleet>: on ${os.hostname()} it is ${fleet}; on another machine it is the folder "${topic}" under $FLEET_ROOT, or under ~/fleet if FLEET_ROOT is unset. Read <fleet>/PROTOCOL.md in full, then run:
+Before you start the task above, join the fleet. Call its folder <fleet>: on ${os.hostname()} it is ${fleet}; on another machine it is the folder "${topic}" under $FLEET_ROOT, or under ~/fleet if FLEET_ROOT is unset. Read <fleet>/PROTOCOL.md in full, then run:
   node ${f} join --as ${worker} --role ${JSON.stringify(role)} --tool ${tool}
 Run "node ${f} status --as ${worker} busy --task ..." while you work.
 
 When the task is done (or you are blocked and need ${orch}), report back:
   node ${f} send --as ${worker} --to ${orch} --type reply --subject "<one line>" --body "<result>"
 Then set yourself idle and watch your inbox for the next task, as PROTOCOL.md describes.
-Do not start new sessions or threads; only ${orch} does that. If the work needs another worker, ask ${orch}.
-
-Task:`);
+Do not start new sessions or threads; only ${orch} does that. If the work needs another worker, ask ${orch}.`);
   },
 
   status({ pos, opt }) {
