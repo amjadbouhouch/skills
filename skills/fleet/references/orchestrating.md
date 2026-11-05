@@ -3,17 +3,44 @@
 Read this when your card is the fleet's orchestrator (`who` marks it with `*`). The basics in
 SKILL.md and `PROTOCOL.md` still apply; this adds what only the orchestrator does.
 
+- [Standing defaults](#standing-defaults)
 - [Running the work](#running-the-work)
 - [Writing a task](#writing-a-task)
 - [Starting sessions](#starting-sessions)
 - [Waking and steering workers](#waking-and-steering-workers)
 - [Working with another project's orchestrator](#working-with-another-projects-orchestrator)
 
+## Standing defaults
+
+These hold for every fleet until the user says otherwise for this fleet or project. On your first
+turn, copy them into the standing rules of your state file, with any change the user makes, so
+they survive compaction.
+
+- **Work autonomously.** You own the plan and its done criterion. When a milestone lands, report
+  it and start the next step in the same turn. Stop and wait for the user only when you are
+  **blocked** (a login, data or access only they can give) or face a **critical decision**:
+  deleting or rewriting data, a deploy or a push to a protected branch, a new running cost, or a
+  product question only they can answer. For anything else, decide, tell them in a line, and go on.
+- **Talk to the user in ASD-STE100 Simplified Technical English (STE)**: every report, question
+  and status line you write to them. Use the STE writing rules: one topic per sentence; sentences
+  of 20 words or fewer for instructions, 25 or fewer for descriptions; the imperative for
+  instructions; active voice and simple tenses; one meaning per word, and the same word each time
+  for the same thing; articles kept; plain verbs ("start", not "spin up"). Write code, commands,
+  paths, ids and quoted errors exactly as they are. Messages to workers and peer orchestrators
+  keep the fleet's usual style.
+- **At most 3 workers run at once.** A worker's own sub-agents don't count toward the cap. When
+  the user changes the cap, follow the new number and resend affected briefs (message + wake-up).
+- **Never start a session in plan mode.** A plan-mode session can't run fleet commands, so it
+  never reports back. A planner runs in the default mode, in the `root` workspace, with a task
+  that says not to change code.
+- **Effort: medium, high for complex work.** Complex means a planner, auth, payments or security,
+  a data migration, or a change across many modules. Codex runs at high.
+
 ## Running the work
 
 If the `product-lifecycle` skill is installed, run implementation work through it: it decides
 when to start a planner, when a plan needs the user's approval, and how work is recorded,
-reviewed and merged. Where it asks you to wait for the user, that overrides "don't stop" below.
+reviewed and merged. Its approval rule follows the autonomy default above.
 
 Split the work into tasks one worker can finish without asking you anything. Run `who` to see who
 is available. When no idle worker fits, start one ([Starting sessions](#starting-sessions)) rather
@@ -22,9 +49,6 @@ than asking the user to open a session. Send one task per message, written as
 (replies carry `reply_to`). Keep a watcher running so replies wake you. When every task has a
 reply, report the results to the user.
 
-- **Don't stop to wait for the user's go.** When a plan exists and a milestone lands, report it
-  and start the next step in the same turn. Ask the user only for what only they can give:
-  logins, data, product decisions, outward-facing actions.
 - **Keep your plan in a file**: `context/<you>--state.md` with the goal, live settings, each
   worker's task and thread id, next steps and standing rules. Update it at every milestone. Long
   sessions get compacted and the file is what survives; if you have a memory, note there to read
@@ -39,9 +63,6 @@ reply, report the results to the user.
 - **Resources are yours to grant.** A machine's GPU, RAM, disk and memory commit are shared by
   every session on it, Claude or Codex. Workers ask before a heavy job; grant one at a time, with
   guards (e.g. stop if free disk drops under N GB), and tell the others who holds it.
-- **Agent caps include sub-agents.** When the user caps parallel agents, a worker's sub-agents
-  count. Put the number it may run at once in its brief, and resend (message + wake-up) when the
-  user changes the cap.
 
 ## Writing a task
 
@@ -152,8 +173,9 @@ thread, which can't join the fleet as a peer or outlive your session).
    If the task fits neither clearly, ask the user first.
 3. **Model.** `modelSelection` = `{"instanceId": "<provider instance>", "model": "<model id>",
    "options": [{"id": "<effort option>", "value": "<level>"}]}`. Without it the session inherits
-   yours. Defaults: Claude Opus at medium effort, Codex (`gpt-6.1-sol`) at high, unless the user
-   asked for something else for that session or the fleet. Use the ids
+   yours. Defaults: Claude Opus, Codex `gpt-6.1-sol`, at the effort
+   [Standing defaults](#standing-defaults) gives, unless the user asked for something else for
+   that session or the fleet. Use the ids
    `orchestrator_capabilities` lists: the instance id, not the display name (a Claude instance
    shown as "CPAMC" can be `claudeAgent_cpamc`); model ids like `claude-opus-5-5`, `gpt-6-luna`.
    Skip instances whose `constraints` say disabled or not installed. If several Claude instances
@@ -162,9 +184,9 @@ thread, which can't join the fleet as a peer or outlive your session).
    Codex. T3 Code silently ignores the wrong id and runs at the driver's default (low for Codex).
    Check the option ids in `orchestrator_capabilities` for other drivers.
 
-**Codex workers.** Codex is how to run more work in parallel when the user caps Claude agents (the
-cap doesn't count Codex), but it has its own usage limit: start one only when the user says Codex
-is available. Give it self-contained tasks (build, bench, script, review) with the same brief and
+**Codex workers.** A Codex worker counts toward the worker cap unless the user says it doesn't;
+then Codex is how to run more work in parallel. It has its own usage limit: start one only when
+the user says Codex is available. Give it self-contained tasks (build, bench, script, review) with the same brief and
 done criterion as a Claude worker. It can't watch its inbox in the background, so you wake it for
 every message ([below](#waking-and-steering-workers)).
 
@@ -177,8 +199,9 @@ Then:
   prints: join, report back, never start sessions. `send` refuses a name
   that hasn't joined yet, so don't message a new worker first; its reply comes from that name.
 - **Launch**: `t3_thread_launch` with `projectId` (from `t3_project_list`; omit it for your own
-  project), `title`, `workspaceStrategy`, `modelSelection`, `message`, and
-  `interactionMode: "plan"` to start it in plan mode. A project T3 Code doesn't know yet needs
+  project), `title`, `workspaceStrategy`, `modelSelection` and `message`. Leave
+  `interactionMode` at its default (never `"plan"`, see [Standing defaults](#standing-defaults)).
+  A project T3 Code doesn't know yet needs
   `t3_project_create` (or `t3 project add <path>` on that machine); ask the user if unsure. It returns a `threadId`: record it with
   the worker's name in your state file. You need it to wake, read or stop the session.
 - **Check on it.** Its reply reaches your inbox; `who` shows whether it joined.

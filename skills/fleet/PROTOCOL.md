@@ -153,5 +153,5 @@ half a file. `.stignore` stops Syncthing from syncing `.tmp-*` files.
   it. Codex: start it with `--add-dir <this-folder>`.
 - **Garbled accents in a message** usually come from the shell's console encoding, not the file.
   The file itself is UTF-8, so read it directly.
-- **Sub-agents count against agent caps.** Run no more sub-agents at once than your brief allows
-  (ask the orchestrator if it does not say), and say how many are running in your status.
+- **Sub-agents don't count against the worker cap.** Run the sub-agents the work needs, unless
+  your brief sets a limit, and say how many are running in your status.

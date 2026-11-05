@@ -1,6 +1,6 @@
 ---
 name: product-lifecycle
-description: Take a feature, fix or change from request to merged code through one lifecycle — decide whether it needs a planner, weigh the plan and get approval when it's big, record findings and plan in the project's Notion task, have workers build it to the project's AGENTS.md, code style and tests, review it with /code-review, then merge locally and push. Use whenever an orchestrator (a fleet orchestrator, or a single session working alone) starts implementing something in a project — "implement", "build", "add a feature", "fix this", "ship it", "plan this feature" — and before merging any worker's branch, even if the user doesn't name the lifecycle.
+description: Take a feature, fix or change from request to merged code through one lifecycle — decide whether it needs a planner, weigh the plan and get approval only for critical decisions, record findings and plan in the project's Notion task, have workers build it to the project's AGENTS.md, code style and tests, review it with /code-review, then merge locally and push. Use whenever an orchestrator (a fleet orchestrator, or a single session working alone) starts implementing something in a project — "implement", "build", "add a feature", "fix this", "ship it", "plan this feature" — and before merging any worker's branch, even if the user doesn't name the lifecycle.
 ---
 
 # Product lifecycle
@@ -42,7 +42,8 @@ Otherwise (a contained fix in one area, where you can already name the files) wr
 yourself and go to step 2.
 
 The planner is a fleet worker started like any other (fleet `references/orchestrating.md`), in
-the `root` workspace and plan mode, because it reads and does not edit. Its task:
+the `root` workspace, because it reads and does not edit. Start it in the default mode, never
+plan mode: a plan-mode session can't run fleet commands, so its plan never reaches you. Its task:
 
 > Investigate <request> in <project>. Write `context/<planner>--plan-<topic>.md` with: findings
 > (what exists now, with file paths), the approach and why, alternatives you rejected, slices that
@@ -54,21 +55,21 @@ matter. Send back what's wrong. Once you accept it, the plan is yours.
 
 ## 2. Weigh the plan
 
-Decide whether the user approves before anything is built. A **big** plan goes to the user and
-you wait for their answer, unless they told you to work autonomously (on this task or project;
-note it in the state file). A plan is big when any of these holds:
+Work autonomously by default: you own the plan. Wait for the user's answer only when the plan
+holds a **critical decision**:
 
-- a schema or data migration, or anything that deletes or rewrites data;
-- a change to an API or contract that another app or project depends on;
-- a new dependency, service, piece of infrastructure, or running cost;
-- auth, payments, permissions or security;
-- more than about three slices, or work that is hard to undo;
-- open questions only the user can answer.
+- deleting or rewriting data (a destructive migration, a backfill that overwrites);
+- breaking an API or contract that another app or project depends on;
+- a new running cost (a paid service, new infrastructure);
+- a product question only the user can answer.
 
-Show the user the goal, the approach in a few lines, the slices, the risks and the questions.
-For a small plan, carry on and tell the user in a line what you're doing. Working autonomously
-doesn't cover the actions the project docs reserve for the user, such as deploys or pushing a
-protected branch.
+Then show the user the goal, the approach in a few lines, the slices, the risks and the
+decision, and wait. Otherwise carry on, and tell the user in a few lines what you're building and
+the main risk. A **big** plan (auth, payments or security, a new dependency, more than about
+three slices, or work that is hard to undo) gets the same few lines plus its slices, not a wait.
+If the user asks to approve plans first (on this task or project), note it in the state file and
+wait for each big one. Autonomy never covers the actions the project docs reserve for the user,
+such as deploys or pushing a protected branch.
 
 ## 3. Record it in Notion
 
