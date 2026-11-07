@@ -113,7 +113,11 @@ part in them:
   before adding a dependency or changing a contract outside this slice."
 - **Order and done**: "Tests are part of the task: one test per must-work case, edge cases
   included, plus any edge case you find while coding (name it in your reply). For a bug, add a
-  test that fails without the fix. Done means tests, typecheck and lint pass: <commands>. Commit
+  test that fails without the fix. Where the slice changes code no test covers, first pin
+  today's behaviour with a test, only for the behaviour the slice changes; for UI no test can
+  reach, a screenshot before and after is the proof. Done means tests, typecheck and lint pass:
+  <commands>, and when you change a shared package, the tests of every package that depends on
+  it (the workspace's dependents filter, e.g. `--filter '...<package>'`). Commit
   on your branch; don't merge it or push the merge target. Reply with the branch, the commit
   hash, the commands you ran with their results, the proof for each must-work case (the test
   that covers it, and for a visible change a screenshot or output path from running it), and
@@ -177,7 +181,8 @@ review the new commits first (§5 step 4).
    worker's branch the way the project docs say, `git merge --no-ff <branch>` by default.
 2. Resolve mechanical conflicts yourself. Anything that needs judgement about the code goes back
    to the worker.
-3. Run tests, typecheck and lint on the merged result. If they fail, fix it or undo the merge
+3. Run the full test suite, typecheck and lint on the merged result (`REVIEW.md` may name the
+   command). If they fail, fix it or undo the merge
    before you push.
 4. `git push` the merge target. A protected branch needs the user's say-so. If the repo has no
    remote or the push fails, keep the merge local and tell the user rather than guessing a fix.
@@ -191,7 +196,9 @@ review the new commits first (§5 step 4).
 - Repeated findings: when a finding has come up in two or more tasks (the state file holds the
   earlier ones), propose a line for `REVIEW.md` or a lint rule, so the next review catches it at
   the source.
-- Incidents (when the incident log is on): a merge that gets reverted or causes a regression gets
-  a line in `context/<you>--incidents.md`, as in [references/review.md](references/review.md).
+- Regressions: a merge that gets reverted or causes a regression becomes a bug task in Notion,
+  run through this lifecycle, so its fix lands with a test that fails without it. When the
+  incident log is on, also add a line to `context/<you>--incidents.md` naming that task, as in
+  [references/review.md](references/review.md).
 - State file: mark the task closed. Report to the user what shipped, the commit, and the
   follow-ups.
