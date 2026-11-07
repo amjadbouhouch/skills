@@ -1,6 +1,6 @@
 ---
 name: product-lifecycle
-description: Take a feature, fix or change from request to merged code through one lifecycle — decide whether it needs a planner, weigh the plan and get approval only for critical decisions, record findings and plan in the project's Notion task, have workers build it to the project's AGENTS.md, code style and tests, review it with /code-review, then merge locally and push. Use whenever an orchestrator (a fleet orchestrator, or a single session working alone) starts implementing something in a project — "implement", "build", "add a feature", "fix this", "ship it", "plan this feature" — and before merging any worker's branch, even if the user doesn't name the lifecycle.
+description: Take a feature, fix or change from request to merged code through one lifecycle — decide whether it needs a planner, weigh the plan and get approval only for critical decisions, record findings and plan in the project's Notion task, have workers build it to the project's AGENTS.md, code style and tests, review it with /code-review at a depth set by its risk, then merge locally and push. Use whenever an orchestrator (a fleet orchestrator, or a single session working alone) starts implementing something in a project — "implement", "build", "add a feature", "fix this", "ship it", "plan this feature" — and before merging any worker's branch, even if the user doesn't name the lifecycle.
 ---
 
 # Product lifecycle
@@ -28,6 +28,13 @@ you depend on it.
 
 **Merge target** is the branch the user names, otherwise the branch your own checkout is on. Say
 it once when the work starts ("merging into `dev`") rather than deciding it per task.
+
+**Review settings** tune §5 to the project: High paths, security pass, worker self-review, nit
+cap, incident log. If `REVIEW.md` at the repo root has a "Review settings" section, use it.
+Otherwise follow [references/review.md](references/review.md): scan the codebase, propose each
+setting with a one-line reason, and get the user's answer once (when told to work autonomously,
+apply your proposal and say so in a line). Propose again when the project changes: first
+production users, a new sensitive area, a revert, more workers.
 
 ## 1. Triage: does it need a planner?
 
@@ -65,7 +72,7 @@ holds a **critical decision**:
 
 Then show the user the goal, the approach in a few lines, the slices, the risks and the
 decision, and wait. Otherwise carry on, and tell the user in a few lines what you're building and
-the main risk. A **big** plan (auth, payments or security, a new dependency, more than about
+the main risk. A **big** plan (one with a High-tier slice (§5), a new dependency, more than about
 three slices, or work that is hard to undo) gets the same few lines plus its slices, not a wait.
 If the user asks to approve plans first (on this task or project), note it in the state file and
 wait for each big one. Autonomy never covers the actions the project docs reserve for the user,
@@ -104,11 +111,25 @@ part in them:
   hash, the commands you ran with their results, the proof for each must-work case (the test
   that covers it, and for a visible change a screenshot or output path from running it), and
   anything you did differently from the plan, with why."
+- **Self-review** (when the setting is on; default on in a fleet), appended to order and done:
+  "Before you reply, run `/code-review` on your branch with <merge target> as the fixed point
+  <and `/security-review`, on a High slice>. Fix what you agree with, and list what you left and
+  why."
 
 A worker that can't meet its done criterion replies `blocked` with the reason, not a partial
 "done".
 
 ## 5. Review
+
+Review depth follows the **risk tier** of the change, never its author. The riskiest area the
+diff touches sets it (docs plus one auth file is High). Note the tier in the state file with
+the task.
+
+| Tier | The diff touches | Review |
+|---|---|---|
+| Low | only docs, text and translations, tests, internal scripts | `/code-review`, Standards axis only |
+| Medium | ordinary product code | `/code-review`, both axes |
+| High | auth, sessions, permissions, payments/billing, data migrations or deletes, a public API or contract, CI/release, mobile store builds, secrets, or a High path in `REVIEW.md` | `/code-review`, plus `/security-review` (or the `security-audit` skill on the diff) when the security setting is on |
 
 When a worker reports done, check it, then review it:
 
@@ -116,19 +137,32 @@ When a worker reports done, check it, then review it:
    Then, in the worker's worktree (`t3_worktree_list` gives the path), rerun the test, typecheck
    and lint commands yourself, and open the screenshots and files it names. Anything red, or proof
    that doesn't show the case, goes back to the worker.
-2. Run `/code-review` there, with the merge target as the fixed point and the task as the spec:
-   the planner's plan file, or the Notion page saved outside the repo
-   (`ntn pages get <id> > /tmp/<topic>-spec.md`).
-3. Send the findings you agree with back to the same worker, since it has the context: one
-   message naming a context file that lists them, then wake it. Drop the ones you judge wrong and
-   say why. Smells flagged as judgement calls get fixed when they're cheap or the project's
-   standards ask for it.
-4. Review again after the fixes. After three rounds that don't converge, stop and ask the user.
+2. Run the tier's review there, with the merge target as the fixed point. Give it the task as the
+   spec (the planner's plan file, or the Notion page saved outside the repo:
+   `ntn pages get <id> > /tmp/<topic>-spec.md`) and `REVIEW.md` beside AGENTS.md as standards.
+3. Tag every finding, after checking it against the code (a finding with no file:line evidence
+   is a guess until you do):
+   - **Important**: goes back to the worker. Each one ends answered: fixed, or a written reason
+     in the task. Note it in the state file either way, with its class (§7 looks for repeats).
+   - **Nit**: goes back only when `REVIEW.md` asks for it or the fix is trivial, up to the nit cap.
+   - **Pre-existing**: the problem was in the code before this diff. It becomes a follow-up task,
+     never a fix round.
+
+   Drop the findings you judge wrong and say why. When one bug shows up in several places, name
+   the class once and ask for every instance. Send the findings to the same worker, since it has
+   the context: one message naming a context file that lists them, then wake it.
+4. Re-review only the new diff: the last reviewed commit is the fixed point, and an answered
+   finding never comes back. After three rounds that don't converge, ask the worker to reconsider
+   the approach; if it still doesn't converge, ask the user.
+
+An open Important security finding blocks the merge. Before merging a High change, tell the user
+the tier and the security result in a line.
 
 ## 6. Merge
 
 There is no pull request (the repo may be on AWS CodeCommit, and the user works alone), so you
-merge locally:
+merge locally. A review covers one commit: if the branch has moved past the commit you reviewed,
+review the new commits first (§5 step 4).
 
 1. In your checkout, on the merge target, update it (`git pull --ff-only`), then merge the
    worker's branch the way the project docs say, `git merge --no-ff <branch>` by default.
@@ -145,5 +179,10 @@ merge locally:
   becomes its own Notion task, so it isn't lost in the chat.
 - Worker: tell it the branch is merged and to set its card `offline`. Remove its worktree
   (`git worktree remove <path>`) and branch once the merge is pushed.
+- Repeated findings: when a finding has come up in two or more tasks (the state file holds the
+  earlier ones), propose a line for `REVIEW.md` or a lint rule, so the next review catches it at
+  the source.
+- Incidents (when the incident log is on): a merge that gets reverted or causes a regression gets
+  a line in `context/<you>--incidents.md`, as in [references/review.md](references/review.md).
 - State file: mark the task closed. Report to the user what shipped, the commit, and the
   follow-ups.
