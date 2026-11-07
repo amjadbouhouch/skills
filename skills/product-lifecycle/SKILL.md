@@ -54,8 +54,14 @@ plan mode: a plan-mode session can't run fleet commands, so its plan never reach
 
 > Investigate <request> in <project>. Write `context/<planner>--plan-<topic>.md` with: findings
 > (what exists now, with file paths), the approach and why, alternatives you rejected, slices that
-> one worker can each finish with its own done criterion, risks, and open questions for the user.
-> Don't change code. Reply when it's written.
+> one worker can each finish with its own done criterion and must-work cases, risks, and open
+> questions for the user. Don't change code. Reply when it's written.
+
+Every plan, the planner's or your own, names each slice's **must-work cases**: the main path and
+its edge cases. Look for the edges along the input and the state the change reads: empty or
+missing, the boundaries (zero, one, the limit, past it), invalid or hostile input, a dependency
+that fails or times out, no permission, a repeat or concurrent call, and time (timezones, day and
+month ends). Name the ones that apply to this slice; skip the ones that can't happen.
 
 Read the plan file itself, not just the reply, and check its claims against the code where they
 matter. Send back what's wrong. Once you accept it, the plan is yours.
@@ -81,9 +87,9 @@ such as deploys or pushing a protected branch.
 ## 3. Record it in Notion
 
 Write the task where the project docs say, in their layout. Without a layout, use: title, Goal,
-Findings, Plan (the slices, each with its done criterion), Status, Branch. Create it with
-`ntn pages create --parent <database:…|page:…> --content "<markdown>"`, or edit the task page
-the user gave you (`ntn pages edit`). Note the page id in your state file.
+Findings, Plan (the slices, each with its done criterion and must-work cases), Status, Branch.
+Create it with `ntn pages create --parent <database:…|page:…> --content "<markdown>"`, or edit
+the task page the user gave you (`ntn pages edit`). Note the page id in your state file.
 
 Notion is the user's record. A worker on another machine may have no `ntn` login, so the brief
 carries everything the worker needs and only links the page.
@@ -105,7 +111,8 @@ part in them:
 - **Quality bar**: "Before coding, read AGENTS.md and the docs it points to. Follow them, and the
   patterns of the code around your change: naming, structure, error handling, test style. Ask me
   before adding a dependency or changing a contract outside this slice."
-- **Order and done**: "Tests are part of the task: cover the new behaviour, and for a bug add a
+- **Order and done**: "Tests are part of the task: one test per must-work case, edge cases
+  included, plus any edge case you find while coding (name it in your reply). For a bug, add a
   test that fails without the fix. Done means tests, typecheck and lint pass: <commands>. Commit
   on your branch; don't merge it or push the merge target. Reply with the branch, the commit
   hash, the commands you ran with their results, the proof for each must-work case (the test
@@ -133,7 +140,9 @@ the task.
 
 When a worker reports done, check it, then review it:
 
-1. Check the reply carries proof for each must-work case; a missing one goes back to the worker.
+1. Check the reply carries proof for each must-work case, edge cases included, and read the
+   tests: a test that names an edge case but doesn't exercise it counts as missing. A missing
+   one goes back to the worker.
    Then, in the worker's worktree (`t3_worktree_list` gives the path), rerun the test, typecheck
    and lint commands yourself, and open the screenshots and files it names. Anything red, or proof
    that doesn't show the case, goes back to the worker.
