@@ -1,6 +1,6 @@
 ---
 name: fleet
-description: Coordinate AI agent sessions across machines and tools (Claude Code, Codex) through a shared synced folder, by registering, messaging, handing off context and watching an inbox. Use when the user names a fleet folder or fleet topic; asks to set up or join a fleet; asks to message, brief, delegate to or hand off to another agent or session; or asks to check for, or wait on, messages from other agents.
+description: Coordinate AI agent sessions across machines and tools (Claude Code, Codex) through a shared synced folder, by registering, messaging, handing off context and watching an inbox. Use when the user names a fleet folder or fleet topic; asks to set up or join a fleet; asks for a new top-level session, or to message or hand off to another agent or session; or asks to check for, or wait on, messages from other agents.
 ---
 
 # Fleet
@@ -12,6 +12,10 @@ shares anything long as a file in `context/`. The folder is the whole system.
 Fleets live side by side under one synced **root**, one subfolder per project or topic
 (`<root>/<topic>`). The root is `$FLEET_ROOT` if set, otherwise `~/fleet`. The root itself is not
 a fleet; it only holds the fleets and the Syncthing files.
+
+Orchestrating sub-agents inside one T3 Code session tree needs no fleet: that is the `crew`
+skill. A fleet is for sessions that must be peers: on several machines, long-lived, talking to
+each other, or bridging two projects' orchestrators.
 
 `fleet.mjs` (Node ≥ 18, no dependencies) does the file work. `init` copies it and `PROTOCOL.md`
 into the fleet folder, and the copy finds the fleet from its own location: run

@@ -72,9 +72,21 @@ Check: `npx -y rea-agents@latest doctor --client claude_code --skill --json` rep
 
 ## Skills
 
+### crew
+
+Runs an orchestrator with sub-agent workers inside T3 Code: briefs, worktrees, fix rounds, merge. Source: [`skills/crew`](skills/crew)
+
+Requires Node.js (for `npx`).
+
+```bash
+npx skills add amjadbouhouch/skills --skill crew -g -y
+```
+
+Check: `~/.agents/skills/crew/SKILL.md` exists.
+
 ### fleet
 
-Coordinates agent sessions across machines through a shared synced folder. Source: [`skills/fleet`](skills/fleet)
+Coordinates agent sessions across machines through a shared synced folder. It reads the orchestrator defaults and task-writing guide from `crew`, so install both. Source: [`skills/fleet`](skills/fleet)
 
 Requires Node.js (for `npx`).
 
@@ -86,12 +98,12 @@ Check: `~/.agents/skills/fleet/SKILL.md` exists.
 
 ### product-lifecycle
 
-The lifecycle a fleet orchestrator runs work through: planner, plan approval, Notion task, build, `/code-review`, local merge. Source: [`skills/product-lifecycle`](skills/product-lifecycle)
+The lifecycle a crew or fleet orchestrator runs work through: planner, plan approval, tracker task (Notion or apm), build, `/code-review`, local merge. Source: [`skills/product-lifecycle`](skills/product-lifecycle)
 
-Requires Node.js (for `npx`), the Notion CLI below, and the `code-review` skill, installed with it:
+Requires Node.js (for `npx`), the Notion CLI or agent-pm below, the `crew` skill, and the `code-review` skill, installed with it:
 
 ```bash
-npx skills add amjadbouhouch/skills --skill product-lifecycle -g -y
+npx skills add amjadbouhouch/skills --skill product-lifecycle --skill crew -g -y
 npx skills add https://github.com/mattpocock/skills --skill code-review -g -y
 ```
 

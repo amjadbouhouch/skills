@@ -1,30 +1,35 @@
 ---
 name: product-lifecycle
-description: Take a feature, fix or change from request to merged code through one lifecycle — decide whether it needs a planner, weigh the plan and get approval only for critical decisions, record findings and plan in the project's Notion task, have workers build it to the project's AGENTS.md, code style and tests, review it with /code-review at a depth set by its risk, then merge locally and push. Use whenever an orchestrator (a fleet orchestrator, or a single session working alone) starts implementing something in a project — "implement", "build", "add a feature", "fix this", "ship it", "plan this feature" — and before merging any worker's branch, even if the user doesn't name the lifecycle.
+description: Take a feature, fix or change from request to merged code through one lifecycle — decide whether it needs a planner, weigh the plan and get approval only for critical decisions, record findings and plan in the project's tracker (Notion or apm), have workers build it to the project's AGENTS.md, code style and tests, review it with /code-review at a depth set by its risk, then merge locally and push. Use whenever an orchestrator (a crew or fleet orchestrator, or a single session working alone) starts implementing something in a project — "implement", "build", "add a feature", "fix this", "ship it", "plan this feature" — and before merging any worker's branch, even if the user doesn't name the lifecycle.
 ---
 
 # Product lifecycle
 
-How a change goes from request to merged code. It is written for a fleet orchestrator and its
-workers (see the `fleet` skill). Working alone in one session, play both roles: plan it
+How a change goes from request to merged code. It is written for an orchestrator and its
+workers: sub-agents with the `crew` skill, or sessions with the `fleet` skill, which say how to
+start, brief and message a worker. Working alone in one session, play both roles: plan it
 yourself, build it yourself, and still review before you merge.
 
 **Triage → Weigh → Record → Build → Review → Merge → Close.** Keep each stage's outcome, with the
-Notion task id and the worker branches, in your state file (`context/<you>--state.md` in a fleet),
-so a compacted or restarted session can pick up where it stopped.
+tracker's task id and the worker branches, in your state file, so a compacted or restarted
+session can pick up where it stopped. The state file and the **context folder** (where plans and
+finding lists go as files) are where crew or fleet puts them: `~/.crew/<project>/` in a crew,
+`context/<you>--…` in a fleet.
 
 ## Before the first task in a project
 
 Read the project's `AGENTS.md` (and `CLAUDE.md` or `CONTRIBUTING.md` if present) and the docs it
 points to. Find in them:
 
-- where tasks live in Notion (database or page) and how a task page is laid out;
+- the **tracker**, Notion or apm, and where tasks live in it (a Notion database or page, an apm
+  project key) and how a task is laid out;
 - the commands for tests, typecheck and lint;
 - branches that must not be pushed without the user (e.g. `main`, `deployment`).
 
-If the docs don't say, ask the user once and note the answer in your state file. Notion goes
-through the `ntn` CLI (the `notion-cli` skill has its details); check `ntn whoami` works before
-you depend on it.
+If the docs don't say, ask the user once (for the tracker: Notion or apm) and note the answer in
+your state file. Notion goes through the `ntn` CLI (the `notion-cli` skill has its details); check
+`ntn whoami` works before you depend on it. apm is the `apm` CLI (`apm guide` has its workflow);
+set `APM_AGENT` to your name, pass `--json`, and check `apm db` works.
 
 **Merge target** is the branch the user names, otherwise the branch your own checkout is on. Say
 it once when the work starts ("merging into `dev`") rather than deciding it per task.
@@ -48,11 +53,11 @@ Start a planner when any of these holds:
 Otherwise (a contained fix in one area, where you can already name the files) write a short plan
 yourself and go to step 2.
 
-The planner is a fleet worker started like any other (fleet `references/orchestrating.md`), in
-the `root` workspace, because it reads and does not edit. Start it in the default mode, never
-plan mode: a plan-mode session can't run fleet commands, so its plan never reaches you. Its task:
+The planner is a worker started like any other, on the project's own checkout (crew:
+`isolation: "shared"`; fleet: the `root` workspace), because it reads and does not edit. Start it
+in the default mode, never plan mode: a plan-mode worker can't write its plan. Its task:
 
-> Investigate <request> in <project>. Write `context/<planner>--plan-<topic>.md` with: findings
+> Investigate <request> in <project>. Write `<context folder>/plan-<topic>.md` with: findings
 > (what exists now, with file paths), the approach and why, alternatives you rejected, slices that
 > one worker can each finish with its own done criterion and must-work cases, risks, and open
 > questions for the user. Don't change code. Reply when it's written.
@@ -84,30 +89,39 @@ If the user asks to approve plans first (on this task or project), note it in th
 wait for each big one. Autonomy never covers the actions the project docs reserve for the user,
 such as deploys or pushing a protected branch.
 
-## 3. Record it in Notion
+## 3. Record it in the tracker
 
 Write the task where the project docs say, in their layout. Without a layout, use: title, Goal,
 Findings, Plan (the slices, each with its done criterion and must-work cases), Status, Branch.
-Create it with `ntn pages create --parent <database:…|page:…> --content "<markdown>"`, or edit
-the task page the user gave you (`ntn pages edit`). Note the page id in your state file.
+Note the task id in your state file.
 
-Notion is the user's record. A worker on another machine may have no `ntn` login, so the brief
-carries everything the worker needs and only links the page.
+- **Notion**: `ntn pages create --parent <database:…|page:…> --content "<markdown>"`, or edit the
+  task page the user gave you (`ntn pages edit`).
+- **apm**: `apm add "<title>" -p <KEY> --body-file <plan.md>`, one subtask per slice
+  (`apm add "<slice>" --parent <KEY-N>`), and `blocks` links for slices that must wait
+  (`apm link <KEY-A> blocks <KEY-B>`). Add a `review` status once per project
+  (`apm status add review -p <KEY> --category active`).
+
+The tracker is the user's record, and you keep it. A worker may have no `ntn` login or apm
+database, so the brief carries everything the worker needs and only names the task.
 
 Move the status as the work moves, using the project's own status names: planned → in progress →
-in review → done.
+in review → done (apm: `start`, `edit --status review`, `done`; a short `apm comment` for each
+milestone).
 
 ## 4. Build
 
-One worker per slice, each in its own worktree on a new branch cut from the merge target
-(`workspaceStrategy: {"type": "worktree", "baseRef": "<merge target>", ...}`). Slices that touch
-the same files go to the same worker, or run one after the other.
+One worker per slice, each in its own worktree on a new branch cut from the merge target (crew:
+`isolation: "worktree"` from your checkout on the merge target; fleet: `workspaceStrategy` with
+`baseRef: "<merge target>"`). Slices that touch the same files go to the same worker, or run one
+after the other.
 
-Write each worker's task in the blocks of fleet `references/orchestrating.md` → "Writing a task"
+Write each worker's task in the blocks of the `crew` skill's `references/writing-a-task.md`
 (goal, setting, what matters most, scope, quality bar, order and done), and put the lifecycle's
 part in them:
 
-- **Setting**: the Notion task url, the plan file, and the findings that bear on this slice.
+- **Setting**: the tracker task (Notion url or apm id), the plan file, and the findings that bear
+  on this slice.
 - **Quality bar**: "Before coding, read AGENTS.md and the docs it points to. Follow them, and the
   patterns of the code around your change: naming, structure, error handling, test style. Ask me
   before adding a dependency or changing a contract outside this slice."
@@ -117,12 +131,11 @@ part in them:
   today's behaviour with a test, only for the behaviour the slice changes; for UI no test can
   reach, a screenshot before and after is the proof. Done means tests, typecheck and lint pass:
   <commands>, and when you change a shared package, the tests of every package that depends on
-  it (the workspace's dependents filter, e.g. `--filter '...<package>'`). Commit
-  on your branch; don't merge it or push the merge target. Reply with the branch, the commit
-  hash, the commands you ran with their results, the proof for each must-work case (the test
+  it (the workspace's dependents filter, e.g. `--filter '...<package>'`). Commit on your branch;
+  don't merge it or push the merge target. Reply with the branch, the commit hash, the commands you ran with their results, the proof for each must-work case (the test
   that covers it, and for a visible change a screenshot or output path from running it), and
   anything you did differently from the plan, with why."
-- **Self-review** (when the setting is on; default on in a fleet), appended to order and done:
+- **Self-review** (when the setting is on; default on with workers), appended to order and done:
   "Before you reply, run `/code-review` on your branch with <merge target> as the fixed point
   <and `/security-review`, on a High slice>. Fix what you agree with, and list what you left and
   why."
@@ -147,12 +160,12 @@ When a worker reports done, check it, then review it:
 1. Check the reply carries proof for each must-work case, edge cases included, and read the
    tests: a test that names an edge case but doesn't exercise it counts as missing. A missing
    one goes back to the worker.
-   Then, in the worker's worktree (`t3_worktree_list` gives the path), rerun the test, typecheck
+   Then, in the worker's worktree (`git worktree list` gives its path and current branch), rerun the test, typecheck
    and lint commands yourself, and open the screenshots and files it names. Anything red, or proof
    that doesn't show the case, goes back to the worker.
 2. Run the tier's review there, with the merge target as the fixed point. Give it the task as the
-   spec (the planner's plan file, or the Notion page saved outside the repo:
-   `ntn pages get <id> > /tmp/<topic>-spec.md`) and `REVIEW.md` beside AGENTS.md as standards.
+   spec (the planner's plan file, or the tracker task saved outside the repo:
+   `ntn pages get <id>` or `apm show <KEY-N> --tree`, into `/tmp/<topic>-spec.md`) and `REVIEW.md` beside AGENTS.md as standards.
 3. Tag every finding, after checking it against the code (a finding with no file:line evidence
    is a guess until you do):
    - **Important**: goes back to the worker. Each one ends answered: fixed, or a written reason
@@ -163,7 +176,8 @@ When a worker reports done, check it, then review it:
 
    Drop the findings you judge wrong and say why. When one bug shows up in several places, name
    the class once and ask for every instance. Send the findings to the same worker, since it has
-   the context: one message naming a context file that lists them, then wake it.
+   the context: a finding list in the context folder, named in one message (crew: `t3_thread_send`
+   to its thread; fleet: `send`, then wake it).
 4. Re-review only the new diff: the last reviewed commit is the fixed point, and an answered
    finding never comes back. After three rounds that don't converge, ask the worker to reconsider
    the approach; if it still doesn't converge, ask the user.
@@ -178,27 +192,26 @@ merge locally. A review covers one commit: if the branch has moved past the comm
 review the new commits first (§5 step 4).
 
 1. In your checkout, on the merge target, update it (`git pull --ff-only`), then merge the
-   worker's branch the way the project docs say, `git merge --no-ff <branch>` by default.
+   worker's branch (its name from `git worktree list`) the way the project docs say, `git merge --no-ff <branch>` by default.
 2. Resolve mechanical conflicts yourself. Anything that needs judgement about the code goes back
    to the worker.
 3. Run the full test suite, typecheck and lint on the merged result (`REVIEW.md` may name the
-   command). If they fail, fix it or undo the merge
-   before you push.
+   command). If they fail, fix it or undo the merge before you push.
 4. `git push` the merge target. A protected branch needs the user's say-so. If the repo has no
    remote or the push fails, keep the merge local and tell the user rather than guessing a fix.
 
 ## 7. Close
 
-- Notion: status done, the merge commit, anything deferred. Each follow-up or deferred finding
-  becomes its own Notion task, so it isn't lost in the chat.
-- Worker: tell it the branch is merged and to set its card `offline`. Remove its worktree
-  (`git worktree remove <path>`) and branch once the merge is pushed.
+- Tracker: status done, the merge commit, anything deferred. Each follow-up or deferred finding
+  becomes its own tracker task, so it isn't lost in the chat.
+- Worker: remove its worktree (`git worktree remove <path>`) and branch once the merge is pushed.
+  In a fleet, also tell it the branch is merged and to set its card `offline`.
 - Repeated findings: when a finding has come up in two or more tasks (the state file holds the
   earlier ones), propose a line for `REVIEW.md` or a lint rule, so the next review catches it at
   the source.
-- Regressions: a merge that gets reverted or causes a regression becomes a bug task in Notion,
+- Regressions: a merge that gets reverted or causes a regression becomes a bug task in the tracker,
   run through this lifecycle, so its fix lands with a test that fails without it. When the
-  incident log is on, also add a line to `context/<you>--incidents.md` naming that task, as in
+  incident log is on, also add a line to `incidents.md` in the context folder naming that task, as in
   [references/review.md](references/review.md).
 - State file: mark the task closed. Report to the user what shipped, the commit, and the
   follow-ups.

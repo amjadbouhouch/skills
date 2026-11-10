@@ -12,29 +12,13 @@ SKILL.md and `PROTOCOL.md` still apply; this adds what only the orchestrator doe
 
 ## Standing defaults
 
-These hold for every fleet until the user says otherwise for this fleet or project. On your first
-turn, copy them into the standing rules of your state file, with any change the user makes, so
-they survive compaction.
+The `crew` skill's "Standing defaults" hold here too (autonomy, STE with the user, at most 3
+workers, never plan mode, effort); read them in its `SKILL.md` and copy them into your state
+file's standing rules on your first turn. Two fleet additions:
 
-- **Work autonomously.** You own the plan and its done criterion. When a milestone lands, report
-  it and start the next step in the same turn. Stop and wait for the user only when you are
-  **blocked** (a login, data or access only they can give) or face a **critical decision**:
-  deleting or rewriting data, a deploy or a push to a protected branch, a new running cost, or a
-  product question only they can answer. For anything else, decide, tell them in a line, and go on.
-- **Talk to the user in ASD-STE100 Simplified Technical English (STE)**: every report, question
-  and status line you write to them. Use the STE writing rules: one topic per sentence; sentences
-  of 20 words or fewer for instructions, 25 or fewer for descriptions; the imperative for
-  instructions; active voice and simple tenses; one meaning per word, and the same word each time
-  for the same thing; articles kept; plain verbs ("start", not "spin up"). Write code, commands,
-  paths, ids and quoted errors exactly as they are. Messages to workers and peer orchestrators
-  keep the fleet's usual style.
-- **At most 3 workers run at once.** A worker's own sub-agents don't count toward the cap. When
-  the user changes the cap, follow the new number and resend affected briefs (message + wake-up).
-- **Never start a session in plan mode.** A plan-mode session can't run fleet commands, so it
-  never reports back. A planner runs in the default mode, in the `root` workspace, with a task
-  that says not to change code.
-- **Effort: medium, high for complex work.** Complex means a planner, auth, payments or security,
-  a data migration, or a change across many modules. Codex runs at high.
+- When the user changes the worker cap, resend the affected briefs (message + wake-up).
+- A plan-mode session can't run fleet commands, so it never reports back. A planner runs in the
+  `root` workspace.
 
 ## Running the work
 
@@ -66,75 +50,10 @@ reply, report the results to the user.
 
 ## Writing a task
 
-A task is the brief a capable peer works from alone, so it carries intent: what to achieve and
-what matters, leaving the how to the worker. Write it as prose, one short paragraph per block, in
-this order:
-
-1. **Goal.** The outcome in a sentence or two, told from the user's side (what they see or can
-   do), anchored to a reference the worker can look at: a mockup, an existing screen, a product.
-2. **Setting.** Repo and branch, which slice of which plan, where the spec lives, who builds what
-   in parallel and the contract between you. A context file holds the detail; this paragraph is
-   enough to start.
-3. **What matters most**, and why. The one thing to protect when trade-offs come up; it is what
-   lets the worker decide without asking.
-4. **Scope.** What's in, what's out, and the cases that must work, named; they double as the
-   acceptance tests.
-5. **Quality bar.** How the worker proves its own work: the tests, and using what it built the
-   way the user will (the flow in the running app, a screenshot beside the mockup, the output
-   file opened, a benchmark), with the tools it has for it.
-6. **Order and done.** What comes first, the done criterion with its commands, where to commit,
-   and the reply: proof for each must-work case that you can check yourself (command output,
-   test names, screenshot or file paths). A "done" without its proof goes back to the worker.
-
-When a context file is the spec, the message still states the goal, what matters most and done in
-a few lines, and points to the file for the rest: the thread and the inbox then show what the
-worker is doing. A follow-up `send --type task` to a worker already on the job uses the same
-blocks, as short as its context allows.
-
-A full first prompt, one paragraph per block:
-
-> Let shop owners export their orders to CSV from the Orders page, so they can reconcile with
-> their accountant without copying rows by hand. The button and its menu follow the Figma frame
-> "Orders / Export" linked in the plan.
->
-> This is slice B of `context/orch--plan-csv-export.md`: read its decisions and slice B first.
-> Work in `apps/web` on `feat/csv-export-web`. Worker `export-api` is building
-> `GET /orders/export?from&to&status` in parallel, returning `text/csv`; build against a stub in
-> `apps/web/src/test/handlers.ts`, and I'll tell you when it's merged.
->
-> What matters most is that the file opens cleanly in Excel and Numbers: amounts as plain numbers,
-> ISO dates, UTF-8 with a BOM so accented customer names survive. A polished button that downloads
-> a broken file is a failed task.
->
-> In scope: the export button, the date and status filters it takes from the list, the download,
-> and an error toast. Out of scope, as follow-ups: scheduled exports and choosing columns. Must
-> work: a filtered list exports only its rows; an empty result downloads a header-only file; a
-> failed request shows the toast and keeps the filters.
->
-> Prove it: vitest for those three cases, then download a file from the stub, open it in a
-> spreadsheet and compare it with the sample in the plan. Follow AGENTS.md and the patterns of the
-> code around your change; ask me before adding a dependency.
->
-> Start with the download path, then the UI. Done means `pnpm --filter web test`, `typecheck` and
-> `lint` pass. Commit on your branch; don't merge or push. Reply with the branch, the commit hash,
-> the commands with their results, the test that covers each must-work case, the downloaded file's
-> path with a screenshot of it opened, and anything you did differently from the plan, with why.
->
-> Fleet: you are "export-web", a worker in the agent fleet … *(the rest of `brief`'s output)*
-
-A short one, when an approved context file is the spec:
-
-> Make new conversation titles come out in the user's language instead of always English, so a
-> French user's sidebar reads in French.
->
-> The plan is approved and is the spec: read `context/orch--titles-build.md` in full and build it
-> on `fix/titles-language`, with no plan step. What matters most is that existing titles stay as
-> they are; only new conversations get localized titles. Done means the plan's tests pass along
-> with `pnpm test`, typecheck and lint. Reply with the branch, the commit hash, the command
-> results, and the titles generated for one French and one English conversation, with an existing
-> title shown unchanged. Ask me only if the plan proves wrong in the code.
->
-> Fleet: you are "titles-language", a worker in the agent fleet … *(the rest of `brief`'s output)*
+Write each task as the `crew` skill's `references/writing-a-task.md` lays out. In a fleet, context
+files live in `context/<you>--<topic>.md` rather than `~/.crew/`, a follow-up to a worker on the
+job is a `send --type task`, and the first prompt ends with the fleet section `brief` prints
+([Starting sessions](#starting-sessions)).
 
 ## Starting sessions
 
@@ -157,8 +76,8 @@ sessions: ask the user to open one, or run the orchestrator inside T3 Code.
 | interrupt its turn | `t3_thread_interrupt` |
 
 `t3_thread_launch` creates an ordinary top-level session, shown in the T3 Code sidebar like one
-the user opened. Use it for fleet workers, not `delegate_task` (that makes a child task of your own
-thread, which can't join the fleet as a peer or outlive your session).
+the user opened. Fleet workers are such sessions: they join the fleet as peers and outlive your
+session. Work that fits child tasks of your own thread belongs to the `crew` skill.
 
 1. **Only the orchestrator starts sessions.** Workers are told so in their brief.
 2. **Choose where it works; don't guess.** Pass `workspaceStrategy`:

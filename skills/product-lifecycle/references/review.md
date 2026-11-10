@@ -8,7 +8,7 @@ Before the first task in a project, scan the codebase:
 - sensitive areas (auth, sessions, payments, permissions, PII, migrations, a public API, mobile
   store releases), with their paths;
 - production users or not (ask if the docs don't say);
-- a solo session or a fleet with workers;
+- a solo session, or an orchestrator with workers (crew or fleet);
 - review findings that the docs or memory already show repeating.
 
 Then propose the settings to the user in one table, each with a one-line reason drawn from the
@@ -20,7 +20,7 @@ off, no production users yet"). Start from these defaults:
 | High paths | the sensitive paths the scan found |
 | Security pass on High | on if sensitive areas exist, else off |
 | `REVIEW.md` | propose it; commit it only with the user's OK |
-| Worker self-review | on in a fleet, off for a solo session (§5 already covers it) |
+| Worker self-review | on with workers, off for a solo session (§5 already covers it) |
 | Nit cap | 3 per review |
 | Incident log | off; propose it once there are production users or a first revert |
 
@@ -69,7 +69,7 @@ there, or a lint rule when a tool can enforce it.
 
 ## Incident log
 
-One line per incident in `context/<you>--incidents.md`:
+One line per incident in `incidents.md` in the context folder:
 
 ```text
 <date> | <task> | <merge commit> | what broke | layer that should have caught it (tests, self-review, /code-review, security pass, user)

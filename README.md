@@ -26,6 +26,16 @@ npx skills add amjadbouhouch/skills --skill agent-board
 
 Skill source: [`skills/data/agent-board`](skills/data/agent-board) · Runtime: [agent-board](https://github.com/amjadbouhouch/agent-board)
 
+### crew
+
+Run work as an orchestrator with sub-agent workers inside T3 Code: split it into tasks, start each worker as a child task in its own worktree, brief it, send it fix rounds on the same thread, check its proof and merge its branch. No shared folder or inboxes; T3 Code carries the messages. Use `fleet` instead for sessions on several machines, long-lived peers, or bridges between projects.
+
+```bash
+npx skills add amjadbouhouch/skills --skill crew -g -y
+```
+
+Skill source: [`skills/crew`](skills/crew)
+
 ### fleet
 
 Coordinate AI agent sessions (Claude Code, Codex) across machines through a shared Syncthing folder: register, message, hand off context and watch an inbox. The fleet is the communication protocol; inside T3 Code the orchestrator starts sessions on any provider (Claude, Codex) with T3 Code's own thread tools, briefs them to join the fleet and report back, wakes idle workers, changes a session's model or effort, and switches a session between providers (Codex ↔ Claude) with its context handed over.
@@ -33,8 +43,10 @@ Coordinate AI agent sessions (Claude Code, Codex) across machines through a shar
 Install, or update to the latest version:
 
 ```bash
-npx skills add amjadbouhouch/skills --skill fleet -g -y
+npx skills add amjadbouhouch/skills --skill fleet --skill crew -g -y
 ```
+
+Fleet reads its orchestrator defaults and task-writing guide from `crew`, so install both.
 
 An existing fleet folder keeps the scripts it was created with. After updating, refresh it with `node ~/.agents/skills/fleet/fleet.mjs init ~/fleet/<topic>`.
 
@@ -54,10 +66,10 @@ Skill source: [`skills/fleet`](skills/fleet)
 
 ### product-lifecycle
 
-Take a feature or fix from request to merged code: start a planner when the work needs one, get the user's approval on big plans, record findings and plan in the project's Notion task, have workers build to the project's `AGENTS.md`, code style and tests, review with `/code-review`, then merge locally and push. Built for a `fleet` orchestrator and its workers; works in a single session too.
+Take a feature or fix from request to merged code: start a planner when the work needs one, get the user's approval on big plans, record findings and plan in the project's tracker (Notion or [apm](https://github.com/amjadbouhouch/agent-pm)), have workers build to the project's `AGENTS.md`, code style and tests, review with `/code-review`, then merge locally and push. Built for a `crew` or `fleet` orchestrator and its workers; works in a single session too.
 
 ```bash
 npx skills add amjadbouhouch/skills --skill product-lifecycle -g -y
 ```
 
-Skill source: [`skills/product-lifecycle`](skills/product-lifecycle) · Uses: [`ntn`](https://ntn.dev) for Notion, [`code-review`](https://github.com/mattpocock/skills) for review
+Skill source: [`skills/product-lifecycle`](skills/product-lifecycle) · Uses: [`ntn`](https://ntn.dev) for Notion or [`apm`](https://github.com/amjadbouhouch/agent-pm), [`code-review`](https://github.com/mattpocock/skills) for review
