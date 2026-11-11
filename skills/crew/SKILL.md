@@ -39,6 +39,10 @@ state file's standing rules, with any change the user makes.
   instructions; active voice and simple tenses; one meaning per word, and the same word each time
   for the same thing; articles kept; plain verbs ("start", not "spin up"). Write code, commands,
   paths, ids and quoted errors exactly as they are. Briefs to workers keep their usual style.
+- **You review; workers never do.** A worker builds, tests and commits. `/code-review`,
+  `/security-review` and the merge run in your session, on the worker's branch. End every brief
+  and fix round with: "Don't run `/code-review`, `/security-review` or any review sub-agents, and
+  don't merge. I review your branch." A review a worker ran on itself doesn't count.
 - **At most 3 workers run at once.** A worker's own sub-agents don't count toward the cap.
 - **Workers run in the default interaction mode**, never plan mode: a plan-mode worker can't
   write its result. A planner gets a task that says not to change code.

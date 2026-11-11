@@ -10,6 +10,12 @@ workers: sub-agents with the `crew` skill, or sessions with the `fleet` skill, w
 start, brief and message a worker. Working alone in one session, play both roles: plan it
 yourself, build it yourself, and still review before you merge.
 
+**Review belongs to the orchestrator, never to a worker.** An agent does not review its own code.
+If you are a worker (your task is a brief from an orchestrator), this skill gives you only §4:
+build, test, commit, reply. Don't run `/code-review` or `/security-review`, don't start review
+sub-agents, and don't merge, even when the brief or a `REVIEW.md` seems to ask for it; your
+orchestrator reviews your branch.
+
 **Triage → Weigh → Record → Build → Review → Merge → Close.** Keep each stage's outcome, with the
 tracker's task id and the worker branches, in your state file, so a compacted or restarted
 session can pick up where it stopped. The state file and the **context folder** (where plans and
@@ -34,8 +40,9 @@ set `APM_AGENT` to your name, pass `--json`, and check `apm db` works.
 **Merge target** is the branch the user names, otherwise the branch your own checkout is on. Say
 it once when the work starts ("merging into `dev`") rather than deciding it per task.
 
-**Review settings** tune §5 to the project: High paths, security pass, worker self-review, nit
-cap, incident log. If `REVIEW.md` at the repo root has a "Review settings" section, use it.
+**Review settings** tune §5 to the project: High paths, security pass, nit cap, incident log.
+There is no worker self-review setting; a `Worker self-review` line in an existing `REVIEW.md` is
+void, so propose deleting it. If `REVIEW.md` at the repo root has a "Review settings" section, use it.
 Otherwise follow [references/review.md](references/review.md): scan the codebase, propose each
 setting with a one-line reason, and get the user's answer once (when told to work autonomously,
 apply your proposal and say so in a line). Propose again when the project changes: first
@@ -135,10 +142,9 @@ part in them:
   don't merge it or push the merge target. Reply with the branch, the commit hash, the commands you ran with their results, the proof for each must-work case (the test
   that covers it, and for a visible change a screenshot or output path from running it), and
   anything you did differently from the plan, with why."
-- **Self-review** (when the setting is on; default on with workers), appended to order and done:
-  "Before you reply, run `/code-review` on your branch with <merge target> as the fixed point
-  <and `/security-review`, on a High slice>. Fix what you agree with, and list what you left and
-  why."
+- **No review**, the last line of every brief and fix round, word for word: "Don't run
+  `/code-review`, `/security-review` or any review sub-agents, and don't merge. I review your
+  branch." Without it, a worker that loads this skill or a review skill reviews its own code.
 
 A worker that can't meet its done criterion replies `blocked` with the reason, not a partial
 "done".
@@ -154,6 +160,10 @@ the task.
 | Low | only docs, text and translations, tests, internal scripts | `/code-review`, Standards axis only |
 | Medium | ordinary product code | `/code-review`, both axes |
 | High | auth, sessions, permissions, payments/billing, data migrations or deletes, a public API or contract, CI/release, mobile store builds, secrets, or a High path in `REVIEW.md` | `/code-review`, plus `/security-review` (or the `security-audit` skill on the diff) when the security setting is on |
+
+You run this review yourself, in your own session; a `/code-review` that a worker ran on its own
+branch doesn't count and doesn't shorten yours. If a worker's reply shows it reviewed itself,
+review the whole branch anyway and note the slip in the state file.
 
 When a worker reports done, check it, then review it:
 

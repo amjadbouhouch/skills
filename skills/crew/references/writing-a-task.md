@@ -19,6 +19,8 @@ brief is all it knows. Write it as prose, one short paragraph per block, in this
 6. **Order and done.** What comes first, the done criterion with its commands, where to commit,
    and the reply: proof for each must-work case that you can check yourself (command output,
    test names, screenshot or file paths). A "done" without its proof goes back to the worker.
+   Close with the no-review line: "Don't run `/code-review`, `/security-review` or any review
+   sub-agents, and don't merge. I review your branch." Reviewing is yours, not the worker's.
 
 When a context file is the spec, the brief still states the goal, what matters most and done in a
 few lines, and points to the file for the rest. A follow-up to a worker already on the job uses
@@ -52,6 +54,8 @@ A full first brief, one paragraph per block:
 > `lint` pass. Commit on your branch; don't merge or push. Reply with the commit hash, the
 > commands with their results, the test that covers each must-work case, the downloaded file's
 > path with a screenshot of it opened, and anything you did differently from the plan, with why.
+> Don't run `/code-review`, `/security-review` or any review sub-agents, and don't merge. I review
+> your branch.
 
 A short one, when an approved context file is the spec:
 
@@ -63,4 +67,5 @@ A short one, when an approved context file is the spec:
 > conversations get localized titles. Done means the plan's tests pass along with `pnpm test`,
 > typecheck and lint. Reply with the commit hash, the command results, and the titles generated
 > for one French and one English conversation, with an existing title shown unchanged. Ask me
-> only if the plan proves wrong in the code.
+> only if the plan proves wrong in the code. Don't run `/code-review`, `/security-review` or any
+> review sub-agents, and don't merge. I review your branch.

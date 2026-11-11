@@ -20,12 +20,12 @@ off, no production users yet"). Start from these defaults:
 | High paths | the sensitive paths the scan found |
 | Security pass on High | on if sensitive areas exist, else off |
 | `REVIEW.md` | propose it; commit it only with the user's OK |
-| Worker self-review | on with workers, off for a solo session (§5 already covers it) |
 | Nit cap | 3 per review |
 | Incident log | off; propose it once there are production users or a first revert |
 
 Risk tiers and the convergence rules in §5 are always on: they route the review and cut rounds,
-so they cost nothing to keep.
+so they cost nothing to keep. Who reviews is not a setting either: the orchestrator, never a
+worker.
 
 Save the answer in `REVIEW.md` under "Review settings". If the user wants no repo file, save it
 in your state file.
@@ -39,7 +39,6 @@ Short, at the repo root, read by both `/code-review` axes:
 
 ## Review settings
 - Security pass on High: on
-- Worker self-review: on
 - Nit cap: 3
 - Incident log: off
 
@@ -72,7 +71,7 @@ there, or a lint rule when a tool can enforce it.
 One line per incident in `incidents.md` in the context folder:
 
 ```text
-<date> | <task> | <merge commit> | what broke | layer that should have caught it (tests, self-review, /code-review, security pass, user)
+<date> | <task> | <merge commit> | what broke | layer that should have caught it (tests, /code-review, security pass, user)
 ```
 
 When the review skills or `REVIEW.md` change, re-run the review on the logged commits as a quick
