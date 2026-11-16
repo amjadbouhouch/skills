@@ -192,6 +192,10 @@ When a worker reports done, check it, then review it:
    finding never comes back. After three rounds that don't converge, ask the worker to reconsider
    the approach; if it still doesn't converge, ask the user.
 
+When the user says "council", also run the crew skill's council
+([crew/references/council.md](../crew/references/council.md)) on the branch. Its accepted
+findings join yours in the same finding list.
+
 An open Important security finding blocks the merge. Before merging a High change, tell the user
 the tier and the security result in a line.
 

@@ -1,6 +1,6 @@
 ---
 name: crew
-description: Run work as an orchestrator with sub-agent workers in T3 Code — split it into tasks, start each worker as a child task (delegate_task) in its own worktree, brief it, send it fix rounds, check its proof and merge its branch. Use when the user asks to orchestrate, split work across workers or sub-agents, run work in parallel, delegate a build, or names a crew; and whenever the product-lifecycle skill needs workers.
+description: Run work as an orchestrator with sub-agent workers in T3 Code — split it into tasks, start each worker as a child task (delegate_task) in its own worktree, brief it, send it fix rounds, check its proof and merge its branch. Use when the user asks to orchestrate, split work across workers or sub-agents, run work in parallel, delegate a build, names a crew, or says "council" (a multi-provider review); and whenever the product-lifecycle skill needs workers.
 ---
 
 # Crew
@@ -64,6 +64,8 @@ as [references/writing-a-task.md](references/writing-a-task.md) lays out.
 - **Resources are yours to grant.** Workers share the machine's CPU, RAM and disk. Grant a heavy
   job (a full build, a training run) to one worker at a time.
 - When every task has its result, report to the user.
+- **Council**: when the user says "council", get a review from one strong model per provider, as
+  [references/council.md](references/council.md) lays out. It adds to your own review.
 
 ## Starting a worker
 
