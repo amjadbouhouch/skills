@@ -19,7 +19,8 @@ brief is all it knows. Write it as prose, one short paragraph per block, in this
 6. **Order and done.** What comes first, the done criterion with its commands, where to commit,
    and the reply: proof for each must-work case that you can check yourself (command output,
    test names, screenshot or file paths). A "done" without its proof goes back to the worker.
-   Close with the no-review line: "Don't run `/code-review`, `/security-review` or any review
+   Close with the question line (how to ask you when blocked; see the skill's "Questions from a
+   worker"), then the no-review line: "Don't run `/code-review`, `/security-review` or any review
    sub-agents, and don't merge. I review your branch." Reviewing is yours, not the worker's.
 
 When a context file is the spec, the brief still states the goal, what matters most and done in a
@@ -54,8 +55,11 @@ A full first brief, one paragraph per block:
 > `lint` pass. Commit on your branch; don't merge or push. Reply with the commit hash, the
 > commands with their results, the test that covers each must-work case, the downloaded file's
 > path with a screenshot of it opened, and anything you did differently from the plan, with why.
-> Don't run `/code-review`, `/security-review` or any review sub-agents, and don't merge. I review
-> your branch.
+> If you are blocked and need me, commit what you have and end your turn with a reply that starts
+> with `QUESTION:`, with the options you see and the one you'd pick. Don't use a question tool or
+> wait mid-turn; nobody watches this thread. I answer here and you continue. Don't run
+> `/code-review`, `/security-review` or any review sub-agents, and don't merge. I review your
+> branch.
 
 A short one, when an approved context file is the spec:
 
@@ -66,6 +70,9 @@ A short one, when an approved context file is the spec:
 > with no plan step. What matters most is that existing titles stay as they are; only new
 > conversations get localized titles. Done means the plan's tests pass along with `pnpm test`,
 > typecheck and lint. Reply with the commit hash, the command results, and the titles generated
-> for one French and one English conversation, with an existing title shown unchanged. Ask me
-> only if the plan proves wrong in the code. Don't run `/code-review`, `/security-review` or any
-> review sub-agents, and don't merge. I review your branch.
+> for one French and one English conversation, with an existing title shown unchanged. If the
+> plan proves wrong in the code, commit what you have and end your turn with a reply that starts
+> with `QUESTION:`, with the options you see and the one you'd pick. Don't use a question tool or
+> wait mid-turn; nobody watches this thread. I answer here and you continue. Don't run
+> `/code-review`, `/security-review` or any review sub-agents, and don't merge. I review your
+> branch.

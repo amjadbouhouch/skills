@@ -41,8 +41,9 @@ state file's standing rules, with any change the user makes.
   paths, ids and quoted errors exactly as they are. Briefs to workers keep their usual style.
 - **You review; workers never do.** A worker builds, tests and commits. `/code-review`,
   `/security-review` and the merge run in your session, on the worker's branch. End every brief
-  and fix round with: "Don't run `/code-review`, `/security-review` or any review sub-agents, and
-  don't merge. I review your branch." A review a worker ran on itself doesn't count.
+  and fix round with the [question line](#questions-from-a-worker), then: "Don't run
+  `/code-review`, `/security-review` or any review sub-agents, and don't merge. I review your
+  branch." A review a worker ran on itself doesn't count.
 - **At most 3 workers run at once.** A worker's own sub-agents don't count toward the cap.
 - **Workers run in the default interaction mode**, never plan mode: a plan-mode worker can't
   write its result. A planner gets a task that says not to change code.
@@ -86,9 +87,28 @@ as [references/writing-a-task.md](references/writing-a-task.md) lays out.
 
 Record the worker's name, `taskId` and `childThreadId` in the state file.
 
+## Questions from a worker
+
+Only a worker's final reply wakes you. A worker that asks with a question tool
+(`AskUserQuestion`, `request_user_input`) or waits mid-turn stalls in its own thread, and you never
+hear of it. So every brief and fix round carries the question line:
+
+> If you are blocked and need me, commit what you have and end your turn with a reply that starts
+> with `QUESTION:`, with the options you see and the one you'd pick. Don't use a question tool or
+> wait mid-turn; nobody watches this thread. I answer here and you continue.
+
+When a reply starts with `QUESTION:`, answer it yourself when the plan, the code or the standing
+defaults settle it; ask the user only for a critical decision or a product question. Send the
+answer with `t3_thread_send` to the worker's `childThreadId`; it returns a new `taskId`, so record
+it. A worker that runs long with no reply may still be stalled on a question tool:
+`t3_pending_request` (`list`, then `respond`) on its `childThreadId` finds and answers it.
+
 ## Results, fix rounds and the branch
 
 - **The result**: `task_status` with the `taskId` returns the worker's final reply as `summary`.
+- **Check the proof before you accept it.** The reply must carry proof for each must-work case.
+  Run its commands yourself, and open the screenshots, files and measurements it names. A "done"
+  with missing or red proof goes back to the worker as a fix round.
 - **Fix rounds go to the same worker**, since it has the context: `t3_thread_send` to its
   `childThreadId` with the findings (or a context file that lists them). It continues with its
   memory, worktree and branch, and returns a new `taskId`; record it. A fresh review or
