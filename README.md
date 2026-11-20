@@ -73,3 +73,7 @@ npx skills add amjadbouhouch/skills --skill product-lifecycle -g -y
 ```
 
 Skill source: [`skills/product-lifecycle`](skills/product-lifecycle) · Uses: [`ntn`](https://ntn.dev) for Notion or [`apm`](https://github.com/amjadbouhouch/agent-pm), [`code-review`](https://github.com/mattpocock/skills) for review
+
+## License
+
+MIT. See [LICENSE](LICENSE).
